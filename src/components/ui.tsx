@@ -25,15 +25,15 @@ export function PageHeader({ title, subtitle, back, action }: { title: string; s
 
 export function Tabs<T extends string>({ value, onChange, options }: { value: T; onChange: (v: T) => void; options: { value: T; label: string }[] }) {
   return (
-    <div role="tablist" className="mx-5 mb-4 flex rounded-[14px] bg-batu p-1">
+    <div role="tablist" className="mx-5 mb-4 flex rounded-full bg-batu p-1">
       {options.map((o) => (
         <button
           key={o.value}
           role="tab"
           aria-selected={value === o.value}
           onClick={() => onChange(o.value)}
-          className={`flex-1 rounded-[11px] px-3 py-2 text-[0.84rem] font-bold transition-colors ${
-            value === o.value ? 'bg-white text-tinta shadow-[0_2px_6px_rgba(11,31,75,0.1)]' : 'text-redup'
+          className={`flex-1 rounded-full px-3 py-2 text-sm font-semibold transition-colors ${
+            value === o.value ? 'bg-white text-tinta shadow-[0_1px_2px_rgba(29,34,40,0.12)]' : 'text-redup'
           }`}
         >
           {o.label}

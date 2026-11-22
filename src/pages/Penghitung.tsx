@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics'
-import { Tabs } from '../components/ui'
+import { PageHeader } from '../components/ui'
 
 type Mode = 'tawaf' | 'sai'
 const TOTAL = 7
@@ -26,14 +25,15 @@ async function buzz(finished: boolean) {
   }
 }
 
-// perjalanan ganjil: Shafa → Marwah, genap: Marwah → Shafa
-const saiLabel = (round: number) => (round % 2 === 1 ? 'Dari Shafa ke Marwah.' : 'Dari Marwah ke Shafa.')
+function saiLabel(round: number) {
+  // putaran ganjil: Shafa → Marwah, genap: Marwah → Shafa
+  return round % 2 === 1 ? 'Shafa ke Marwah' : 'Marwah ke Shafa'
+}
 
 export default function Penghitung() {
   const [state, setState] = useState(load)
   const { mode, count } = state
   const done = count >= TOTAL
-  const unit = mode === 'tawaf' ? 'putaran' : 'perjalanan'
 
   useEffect(() => {
     try {
@@ -50,101 +50,92 @@ export default function Penghitung() {
     buzz(c === TOTAL)
   }
 
-  const r = 140
+  const r = 120
   const circ = 2 * Math.PI * r
   const seg = circ / TOTAL
-  const gap = 38
-  const current = Math.min(count + 1, TOTAL)
+  const gap = 30
 
-  const info = done
+  const current = Math.min(count + 1, TOTAL)
+  const status = done
     ? mode === 'tawaf'
-      ? { title: 'Tawaf selesai', body: 'Lanjut shalat dua rakaat di belakang Maqam Ibrahim.' }
-      : { title: "Sa'i selesai di Marwah", body: 'Lanjut tahallul.' }
+      ? 'Tawaf selesai. Lanjut shalat dua rakaat di belakang Maqam Ibrahim.'
+      : "Sa'i selesai di Marwah. Lanjut tahallul."
     : mode === 'tawaf'
-      ? { title: `Putaran ke-${current}`, body: 'Mulai dan akhiri di garis Hajar Aswad.' }
-      : { title: `Perjalanan ke-${current}`, body: saiLabel(current) }
+      ? `Putaran ke-${current}. Mulai dan akhiri di garis Hajar Aswad.`
+      : `Perjalanan ke-${current}: ${saiLabel(current)}.`
 
   return (
-    <div className="pt-safe">
-      <header className="flex items-center justify-between px-5 pt-3.5 pb-4">
-        <Link to="/ibadah" aria-label="Kembali" className="grid h-[42px] w-[42px] place-items-center rounded-[14px] bg-nabawi-muda">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.400" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M15 6l-6 6 6 6" />
-          </svg>
-        </Link>
-        <h1 className="text-base font-bold">Penghitung</h1>
-        <span className="w-[42px]" />
-      </header>
+    <div className="flex min-h-[calc(100dvh-7rem)] flex-col">
+      <PageHeader title="Penghitung" back="/ibadah" />
+      <div className="mx-5 flex rounded-full bg-batu p-1">
+        {(['tawaf', 'sai'] as Mode[]).map((m) => (
+          <button
+            key={m}
+            aria-pressed={mode === m}
+            onClick={() => setState({ mode: m, count: 0 })}
+            className={`flex-1 rounded-full py-2 text-sm font-semibold ${mode === m ? 'bg-white shadow-[0_1px_2px_rgba(29,34,40,0.12)]' : 'text-redup'}`}
+          >
+            {m === 'tawaf' ? 'Tawaf' : "Sa'i"}
+          </button>
+        ))}
+      </div>
 
-      <Tabs
-        value={mode}
-        onChange={(m) => setState({ mode: m, count: 0 })}
-        options={[
-          { value: 'tawaf', label: 'Tawaf' },
-          { value: 'sai', label: "Sa'i" },
-        ]}
-      />
-
-      <button onClick={tap} className="relative mx-auto mt-5 block w-[82%] max-w-[318px]" aria-label={done ? 'Selesai' : `Tambah satu. Sekarang ${count} dari ${TOTAL}`}>
-        <svg viewBox="0 0 318 318" className="w-full" aria-hidden>
-          <g fill="none" strokeWidth="26" strokeLinecap="round" transform="rotate(-90 159 159)">
-            {Array.from({ length: TOTAL }, (_, i) => (
-              <circle
-                key={i}
-                cx="159"
-                cy="159"
-                r={r}
-                stroke={i < count ? 'var(--color-nabawi)' : 'var(--color-nabawi-muda)'}
-                strokeDasharray={`${seg - gap} ${circ - seg + gap}`}
-                strokeDashoffset={-i * seg - gap / 2}
-                style={{ transition: 'stroke 200ms ease' }}
-              />
-            ))}
-          </g>
+      <button
+        onClick={tap}
+        className="mx-5 mt-5 flex flex-1 flex-col items-center justify-center rounded-3xl bg-white py-6 border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)] active:bg-[#f4f8ff]"
+        aria-label={done ? 'Selesai' : `Tambah putaran. Sekarang ${count} dari ${TOTAL}`}
+      >
+        <svg viewBox="0 0 300 300" className="w-[78%] max-w-[300px]" aria-hidden>
+          {Array.from({ length: TOTAL }, (_, i) => (
+            <circle
+              key={i}
+              cx="150"
+              cy="150"
+              r={r}
+              fill="none"
+              stroke={i < count ? 'var(--color-nabawi)' : 'var(--color-nabawi-muda)'}
+              strokeWidth="22"
+              strokeLinecap="round"
+              strokeDasharray={`${seg - gap} ${circ - seg + gap}`}
+              strokeDashoffset={-i * seg}
+              transform="rotate(-90 150 150)"
+              style={{ transition: 'stroke 200ms ease' }}
+            />
+          ))}
+          <text x="150" y="160" textAnchor="middle" fontSize="104" fontWeight="800" fill="var(--color-tinta)" style={{ fontVariantNumeric: 'tabular-nums', fontFamily: 'var(--font-display)' }}>
+            {count}
+          </text>
+          <text x="150" y="200" textAnchor="middle" fontSize="18" fontWeight="600" fill="var(--color-redup)">
+            dari {TOTAL} {mode === 'tawaf' ? 'putaran' : 'perjalanan'}
+          </text>
         </svg>
-        <span className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-display text-[8rem] leading-[0.85] font-extrabold tabular-nums">{count}</span>
-          <span className="mt-2.5 text-[0.95rem] font-semibold text-redup">
-            dari {TOTAL} {unit}
-          </span>
-        </span>
+        <p className={`mt-4 max-w-[30ch] px-4 text-center text-[0.98rem] ${done ? 'font-semibold text-nabawi' : ''}`} aria-live="polite">
+          {status}
+        </p>
+        {!done && (
+          <p className="tulis mt-3 flex -rotate-2 items-center gap-2 text-[1.6rem]" aria-hidden>
+            ketuk layar tiap satu putaran
+            <svg width="30" height="30" viewBox="0 0 30 30" fill="none" stroke="currentColor" strokeWidth="2.200" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 26C18 26 25 18 25 5" />
+              <path d="M18 11l7-7 4 9" />
+            </svg>
+          </p>
+        )}
       </button>
 
-      {!done && (
-        <p className="tulis mt-2 flex -rotate-2 items-start justify-center gap-1.5 text-[1.45rem]" aria-hidden>
-          <span className="pt-2.5">ketuk layar tiap satu {unit}</span>
-          <svg width="30" height="34" viewBox="0 0 30 34" fill="none" stroke="currentColor" strokeWidth="2.200" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M5 31C19 30 25 20 22 5" />
-            <path d="M14 11l8-7 6 9" />
-          </svg>
-        </p>
-      )}
-
-      <div className="mx-5 mt-3 flex items-center gap-3 rounded-[20px] bg-nabawi-muda px-4 py-3.5 text-[0.9rem] leading-snug" aria-live="polite">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-nabawi text-white">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.200" strokeLinecap="round" aria-hidden>
-            {done ? <path d="M6 12l4 4 8-9" /> : <><circle cx="12" cy="12" r="9" /><path d="M12 7v6M12 16.500v.5" /></>}
-          </svg>
-        </span>
-        <span>
-          <b className="block font-bold">{info.title}</b>
-          {info.body}
-        </span>
-      </div>
-
-      <div className="px-5">
-        <button onClick={tap} disabled={done} className="mt-4 w-full rounded-[18px] bg-nabawi py-[17px] text-[1.03rem] font-bold text-white shadow-[0_8px_18px_rgba(24,87,240,0.3)] disabled:opacity-40 disabled:shadow-none">
-          Selesai satu {unit}
+      <div className="mx-5 mt-3 mb-2 grid grid-cols-2 gap-3">
+        <button
+          onClick={() => setState({ mode, count: Math.max(count - 1, 0) })}
+          disabled={count === 0}
+          className="rounded-xl border border-garis bg-white py-3 font-semibold disabled:opacity-40"
+        >
+          Kurangi satu
         </button>
-        <div className="grid grid-cols-2">
-          <button onClick={() => setState({ mode, count: Math.max(count - 1, 0) })} disabled={count === 0} className="py-3.5 text-sm font-bold text-nabawi disabled:opacity-40">
-            Kurangi satu
-          </button>
-          <button onClick={() => setState({ mode, count: 0 })} disabled={count === 0} className="py-3.5 text-sm font-bold text-nabawi disabled:opacity-40">
-            Mulai ulang
-          </button>
-        </div>
+        <button onClick={() => setState({ mode, count: 0 })} disabled={count === 0} className="rounded-xl border border-garis bg-white py-3 font-semibold disabled:opacity-40">
+          Mulai ulang
+        </button>
       </div>
+      <p className="mx-5 mb-4 text-center text-xs text-redup">Kalau ragu jumlah putaran, ambil hitungan yang lebih sedikit.</p>
     </div>
   )
 }
