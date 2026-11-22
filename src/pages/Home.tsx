@@ -27,8 +27,8 @@ function Skyline() {
 export default function Home() {
   const trip = useTrip()
   const steps = useSteps()
-  const deposits = useLiveQuery(() => db.deposits.toArray(), []) ?? []
-  const expenses = useLiveQuery(() => db.expenses.toArray(), []) ?? []
+  const deposits = useLiveQuery(() => db.deposits.filter((d) => !d.deleted).toArray(), []) ?? []
+  const expenses = useLiveQuery(() => db.expenses.filter((e) => !e.deleted).toArray(), []) ?? []
 
   const days = daysUntil(trip.departDate)
   const doneCount = PREP_STEPS.filter((s) => steps.get(s.id)?.done).length
@@ -138,6 +138,23 @@ export default function Home() {
           <p className="mt-2 text-xs text-redup">{expenses.length} catatan</p>
         </Link>
       </div>
+
+      <Link to="/bareng" className="mt-3 flex items-center gap-3 rounded-[22px] border border-garis px-4 py-3.5">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emas-muda text-[#9a6b00]">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <circle cx="9" cy="8" r="3" />
+            <circle cx="17" cy="9" r="2.5" />
+            <path d="M3 19a6 6 0 0112 0M15 14.500a4.500 4.500 0 016 4.500" />
+          </svg>
+        </span>
+        <span className="min-w-0">
+          <span className="block text-[0.95rem] font-bold">Umroh bareng partner</span>
+          <span className="block text-xs text-redup">Samakan checklist, tabungan, dan pengeluaran.</span>
+        </span>
+        <svg className="ml-auto shrink-0 text-[#93a0b8]" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.200" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M9 6l6 6-6 6" />
+        </svg>
+      </Link>
 
       <nav className="mt-4 grid grid-cols-4 text-center text-xs font-semibold" aria-label="Pintasan">
         {SHORTCUTS.map((s) => (

@@ -1,5 +1,12 @@
 import Dexie, { type EntityTable } from 'dexie'
 
+/** Field untuk data yang bisa digabung antar perangkat (lihat src/lib/sync.ts). */
+export interface Synced {
+  uid: string // identitas lintas perangkat
+  updatedAt: number // waktu ubah terakhir, ms
+  deleted?: boolean // dihapus (disimpan sebagai penanda agar hapus ikut tersinkron)
+}
+
 export interface Trip {
   id: 'main'
   name: string
@@ -13,15 +20,17 @@ export interface Trip {
   bloodType?: string
   allergies?: string
   emergencyContact?: string
+  updatedAt?: number
 }
 
 export interface StepStatus {
   id: string
   done: boolean
   note?: string
+  updatedAt?: number
 }
 
-export interface ChecklistItem {
+export interface ChecklistItem extends Synced {
   id?: number
   group: string
   label: string
@@ -31,7 +40,7 @@ export interface ChecklistItem {
 
 export type ExpenseCategory = 'persiapan' | 'transport' | 'akomodasi' | 'makan' | 'ibadah' | 'oleh-oleh' | 'lainnya'
 
-export interface Expense {
+export interface Expense extends Synced {
   id?: number
   title: string
   amount: number
@@ -40,7 +49,7 @@ export interface Expense {
   date: string
 }
 
-export interface Deposit {
+export interface Deposit extends Synced {
   id?: number
   amount: number
   date: string
@@ -63,6 +72,36 @@ db.version(1).stores({
   deposits: '++id, date',
 })
 
+export const newUid = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`)
+export const stamp = () => ({ uid: newUid(), updatedAt: Date.now() })
+export const defaultUid = (group: string, label: string) => `default:${group}:${label}`
+
+// v2: uid + updatedAt supaya data dua perangkat bisa digabung tanpa server
+db.version(2)
+  .stores({
+    checklist: '++id, group, uid',
+    expenses: '++id, date, category, uid',
+    deposits: '++id, date, uid',
+  })
+  .upgrade(async (tx) => {
+    await tx
+      .table('checklist')
+      .toCollection()
+      .modify((r) => {
+        r.uid ??= r.custom ? newUid() : defaultUid(r.group, r.label)
+        r.updatedAt ??= r.done || r.custom ? Date.now() : 0
+      })
+    for (const t of ['expenses', 'deposits']) {
+      await tx
+        .table(t)
+        .toCollection()
+        .modify((r) => {
+          r.uid ??= newUid()
+          r.updatedAt ??= Date.now()
+        })
+    }
+  })
+
 export const DEFAULT_TRIP: Trip = {
   id: 'main',
   name: 'Umroh pertamaku',
@@ -77,5 +116,8 @@ export async function getTrip(): Promise<Trip> {
 
 export async function saveTrip(patch: Partial<Trip>) {
   const current = await getTrip()
-  await db.trip.put({ ...current, ...patch, id: 'main' })
+  await db.trip.put({ ...current, ...patch, id: 'main', updatedAt: Date.now() })
 }
+
+/** Hapus yang ikut tersinkron: baris ditandai, bukan dibuang. */
+export const softDelete = (table: 'checklist' | 'expenses' | 'deposits', id: number) => db[table].update(id, { deleted: true, updatedAt: Date.now() })

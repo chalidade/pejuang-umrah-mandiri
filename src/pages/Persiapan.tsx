@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db } from '../db'
+import { db, defaultUid, softDelete, stamp } from '../db'
 import { PREP_STEPS } from '../data/steps'
 import { DEFAULT_CHECKLIST } from '../data/checklist'
 import { useSteps } from '../lib/hooks'
@@ -31,7 +31,7 @@ function Langkah() {
   const [open, setOpen] = useState<string | null>(null)
   const done = PREP_STEPS.filter((s) => steps.get(s.id)?.done).length
 
-  const toggle = (id: string) => db.steps.put({ id, done: !steps.get(id)?.done })
+  const toggle = (id: string) => db.steps.put({ id, done: !steps.get(id)?.done, updatedAt: Date.now() })
 
   return (
     <div className="px-5">
@@ -79,24 +79,25 @@ function Langkah() {
 }
 
 function Barang() {
-  const items = useLiveQuery(() => db.checklist.toArray(), [])
+  const all = useLiveQuery(() => db.checklist.toArray(), [])
   const [draft, setDraft] = useState('')
   const [group, setGroup] = useState(Object.keys(DEFAULT_CHECKLIST)[0])
 
   useEffect(() => {
-    if (items && items.length === 0) {
-      db.checklist.bulkAdd(Object.entries(DEFAULT_CHECKLIST).flatMap(([g, labels]) => labels.map((label) => ({ group: g, label, done: false }))))
+    if (all && all.length === 0) {
+      db.checklist.bulkAdd(Object.entries(DEFAULT_CHECKLIST).flatMap(([g, labels]) => labels.map((label) => ({ group: g, label, done: false, uid: defaultUid(g, label), updatedAt: 0 }))))
     }
-  }, [items])
+  }, [all])
 
-  if (!items) return null
+  if (!all) return null
+  const items = all.filter((i) => !i.deleted)
   const groups = Array.from(new Set([...Object.keys(DEFAULT_CHECKLIST), ...items.map((i) => i.group)]))
   const doneCount = items.filter((i) => i.done).length
 
   const add = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!draft.trim()) return
-    await db.checklist.add({ group, label: draft.trim(), done: false, custom: true })
+    await db.checklist.add({ group, label: draft.trim(), done: false, custom: true, ...stamp() })
     setDraft('')
   }
 
@@ -115,12 +116,12 @@ function Barang() {
               <ul className="divide-y divide-batu rounded-2xl bg-white border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
                 {list.map((it) => (
                   <li key={it.id} className="flex items-center gap-3 px-4 py-3">
-                    <button className="flex flex-1 items-center gap-3 text-left" onClick={() => db.checklist.update(it.id!, { done: !it.done })}>
+                    <button className="flex flex-1 items-center gap-3 text-left" onClick={() => db.checklist.update(it.id!, { done: !it.done, updatedAt: Date.now() })}>
                       <Check checked={it.done} />
                       <span className={it.done ? 'text-redup line-through' : ''}>{it.label}</span>
                     </button>
                     {it.custom && (
-                      <button onClick={() => db.checklist.delete(it.id!)} className="text-sm text-redup" aria-label={`Hapus ${it.label}`}>
+                      <button onClick={() => softDelete('checklist', it.id!)} className="text-sm text-redup" aria-label={`Hapus ${it.label}`}>
                         Hapus
                       </button>
                     )}

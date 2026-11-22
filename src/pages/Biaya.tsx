@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, saveTrip, type ExpenseCategory } from '../db'
+import { db, saveTrip, softDelete, stamp, type ExpenseCategory } from '../db'
 import { COST_ITEMS, costOf, type Profile } from '../data/costs'
 import { jutaan, parseAngka, riyal, rupiah, tanggal, today } from '../lib/format'
 import { toIdr, useTrip } from '../lib/hooks'
@@ -150,7 +150,7 @@ function Kalkulator() {
 
 function Tabungan() {
   const trip = useTrip()
-  const deposits = useLiveQuery(() => db.deposits.orderBy('date').reverse().toArray(), []) ?? []
+  const deposits = useLiveQuery(() => db.deposits.orderBy('date').reverse().filter((d) => !d.deleted).toArray(), []) ?? []
   const [amount, setAmount] = useState('')
   const saved = deposits.reduce((a, d) => a + d.amount, 0)
   const remaining = Math.max(trip.savingsTarget - saved, 0)
@@ -165,7 +165,7 @@ function Tabungan() {
     e.preventDefault()
     const n = parseAngka(amount)
     if (!n) return
-    await db.deposits.add({ amount: n, date: today() })
+    await db.deposits.add({ amount: n, date: today(), ...stamp() })
     setAmount('')
   }
 
@@ -216,7 +216,7 @@ function Tabungan() {
                   <p className="font-semibold tabular-nums">{rupiah(d.amount)}</p>
                   <p className="text-xs text-redup">{tanggal(d.date)}</p>
                 </div>
-                <button onClick={() => db.deposits.delete(d.id!)} className="text-sm text-redup" aria-label="Hapus setoran">
+                <button onClick={() => softDelete('deposits', d.id!)} className="text-sm text-redup" aria-label="Hapus setoran">
                   Hapus
                 </button>
               </li>
@@ -240,7 +240,7 @@ const CATEGORIES: { value: ExpenseCategory; label: string }[] = [
 
 function Pengeluaran() {
   const trip = useTrip()
-  const expenses = useLiveQuery(() => db.expenses.orderBy('date').reverse().toArray(), []) ?? []
+  const expenses = useLiveQuery(() => db.expenses.orderBy('date').reverse().filter((e) => !e.deleted).toArray(), []) ?? []
   const [title, setTitle] = useState('')
   const [amount, setAmount] = useState('')
   const [currency, setCurrency] = useState<'IDR' | 'SAR'>('SAR')
@@ -256,7 +256,7 @@ function Pengeluaran() {
     e.preventDefault()
     const n = Number(amount.replace(',', '.'))
     if (!title.trim() || !n) return
-    await db.expenses.add({ title: title.trim(), amount: n, currency, category, date: today() })
+    await db.expenses.add({ title: title.trim(), amount: n, currency, category, date: today(), ...stamp() })
     setTitle('')
     setAmount('')
   }
@@ -320,7 +320,7 @@ function Pengeluaran() {
               </div>
               <div className="text-right">
                 <p className="font-semibold tabular-nums">{e.currency === 'SAR' ? riyal(e.amount) : rupiah(e.amount)}</p>
-                <button onClick={() => db.expenses.delete(e.id!)} className="text-xs text-redup">
+                <button onClick={() => softDelete('expenses', e.id!)} className="text-xs text-redup">
                   Hapus
                 </button>
               </div>

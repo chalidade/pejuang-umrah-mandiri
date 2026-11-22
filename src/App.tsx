@@ -7,6 +7,7 @@ import Ibadah, { IbadahDetail } from './pages/Ibadah'
 import Penghitung from './pages/Penghitung'
 import Darurat from './pages/Darurat'
 import Pengaturan from './pages/Pengaturan'
+import Bareng from './pages/Bareng'
 import ScrollTop from './components/ScrollTop'
 
 export default function App() {
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="ibadah/:id" element={<IbadahDetail />} />
           <Route path="darurat" element={<Darurat />} />
           <Route path="pengaturan" element={<Pengaturan />} />
+          <Route path="bareng" element={<Bareng />} />
           <Route path="*" element={<Home />} />
         </Route>
       </Routes>

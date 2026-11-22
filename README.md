@@ -15,6 +15,16 @@ Satu kode web (React + Vite, PWA offline-first) dibungkus [Capacitor](https://ca
 | Biaya | Estimasi biaya hemat/nyaman (bisa diedit & dibagikan), target tabungan, pengeluaran multi-mata uang |
 | Ibadah | Urutan umroh dari miqat sampai tahallul + doa Arab/latin/arti, penghitung tawaf & sa'i dengan getaran |
 | Darurat | Nomor darurat Saudi, kartu alamat hotel berbahasa Arab, info medis |
+| Umroh bareng | Samakan data dengan partner lewat kode yang dikirim via WhatsApp, tanpa akun dan tanpa server |
+
+## Sinkronisasi tanpa server
+
+Semua data tetap di perangkat. Menu **Umroh bareng** mengemas data perjalanan menjadi satu kode teks (`PUM1z:…`, JSON ter-gzip dalam base64) yang dikirim lewat WhatsApp, lalu digabung di HP partner (`src/lib/sync.ts`).
+
+- Tiap catatan punya `uid` dan `updatedAt`. Saat digabung, perubahan paling baru yang menang.
+- Hapus disimpan sebagai penanda (`deleted`) supaya ikut tersinkron.
+- Info medis dan kontak darurat tidak ikut dikirim.
+- Supaya dua HP sama persis, kedua pihak saling mengirim kode.
 
 ## Struktur
 
@@ -103,7 +113,8 @@ Di Xcode: pilih Team di *Signing & Capabilities*, atur versi/build, lalu *Produc
 
 ## Roadmap berikutnya
 
-- Trip bareng teman + split bill (butuh backend & akun)
+- Split bill antar teman (siapa bayar apa)
+- Sinkron otomatis/real-time (butuh server relay kecil)
 - Trip Pass (pembayaran: Google Play Billing / StoreKit)
 - Pengingat miqat, mode offline peta, kuliner hidden gem, hack umroh
 - Tanya Mutawwif & mutawwif on-call
