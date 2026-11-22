@@ -10,6 +10,8 @@ export interface Synced {
 export interface Trip {
   id: 'main'
   name: string
+  nickname?: string // nama pengguna, hanya di perangkat ini (tidak ikut sync)
+  onboarded?: boolean // sudah melewati layar Mulai
   departDate?: string // YYYY-MM-DD
   returnDate?: string
   travelers: number

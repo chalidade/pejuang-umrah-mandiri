@@ -77,6 +77,21 @@ textarea {
   font: inherit;
 }
 
+/* Safari iOS: kolom tanggal punya lebar bawaan sendiri sehingga keluar dari grid,
+   dan tingginya tidak sama dengan kolom lain saat kosong. Samakan perilakunya. */
+input[type='date'] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 3.125rem;
+}
+input[type='date']::-webkit-date-and-time-value {
+  text-align: left;
+  min-height: 1.5em;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;

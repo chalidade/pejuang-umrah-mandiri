@@ -22,6 +22,11 @@ export interface StepItem {
 }
 
 /** Langkah persiapan yang tampil: bawaan yang tidak dihapus + buatan sendiri. */
+/** undefined = masih memuat, null = belum pernah disimpan */
+export function useTripRow(): Trip | null | undefined {
+  return useLiveQuery(() => db.trip.get('main').then((t) => t ?? null), [])
+}
+
 export function useStepList(): StepItem[] {
   const status = useSteps()
   // Langkah bawaan memakai isi yang sudah diubah pengguna kalau ada

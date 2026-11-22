@@ -9,8 +9,14 @@ import Darurat from './pages/Darurat'
 import Pengaturan from './pages/Pengaturan'
 import Bareng from './pages/Bareng'
 import ScrollTop from './components/ScrollTop'
+import Onboarding from './pages/Onboarding'
+import { useTripRow } from './lib/hooks'
 
 export default function App() {
+  const trip = useTripRow()
+  if (trip === undefined) return null
+  if (!trip?.onboarded) return <Onboarding initial={trip} />
+
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || '/'}>
       <ScrollTop />

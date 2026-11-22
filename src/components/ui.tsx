@@ -45,7 +45,7 @@ export function Tabs<T extends string>({ value, onChange, options }: { value: T;
 
 export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
-    <label className="block">
+    <label className="block min-w-0">
       <span className="mb-1.5 block text-sm font-semibold">{label}</span>
       {children}
       {hint && <span className="mt-1 block text-xs text-redup">{hint}</span>}

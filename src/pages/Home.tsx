@@ -42,8 +42,8 @@ export default function Home() {
     <div className="pt-safe px-5">
       <header className="flex items-center justify-between pt-5 pb-4">
         <div className="min-w-0">
-          <p className="text-[0.85rem] text-redup">Assalamu'alaikum</p>
-          <p className="font-display truncate text-[1.2rem] font-bold">{trip.name}</p>
+          <p className="text-[0.85rem] text-redup">Calon tamu Allah</p>
+          <p className="font-display truncate text-[1.2rem] font-bold">{trip.nickname?.trim() || trip.name}</p>
         </div>
         <Link to="/pengaturan" aria-label="Atur perjalanan" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-nabawi-muda text-tinta">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
