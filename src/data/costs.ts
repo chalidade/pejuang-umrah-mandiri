@@ -26,3 +26,16 @@ export function costOf(item: CostItem, amount: number, days: number) {
   if (item.perDay) return amount * days
   return amount
 }
+
+import type { CostKind, CostRow } from '../db'
+
+export const kindOf = (c: CostItem): CostKind => (c.perNight ? 'malam' : c.perDay ? 'hari' : 'sekali')
+
+export const defaultCostRows = (): CostRow[] =>
+  COST_ITEMS.map((c, i) => ({ uid: `default:cost:${c.id}`, updatedAt: 0, label: c.label, hint: c.hint, kind: kindOf(c), hemat: c.value.hemat, nyaman: c.value.nyaman, order: i }))
+
+export function costTotal(kind: CostKind, amount: number, days: number) {
+  if (kind === 'malam') return amount * Math.max(days - 1, 0)
+  if (kind === 'hari') return amount * days
+  return amount
+}

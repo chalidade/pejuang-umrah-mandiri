@@ -28,6 +28,24 @@ export interface StepStatus {
   done: boolean
   note?: string
   updatedAt?: number
+  // langkah buatan sendiri
+  custom?: boolean
+  title?: string
+  when?: string
+  order?: number
+  deleted?: boolean
+}
+
+export type CostKind = 'sekali' | 'malam' | 'hari'
+
+export interface CostRow extends Synced {
+  id?: number
+  label: string
+  hint: string
+  kind: CostKind
+  hemat: number
+  nyaman: number
+  order: number
 }
 
 export interface ChecklistItem extends Synced {
@@ -62,6 +80,7 @@ export const db = new Dexie('umroh-mandiri') as Dexie & {
   checklist: EntityTable<ChecklistItem, 'id'>
   expenses: EntityTable<Expense, 'id'>
   deposits: EntityTable<Deposit, 'id'>
+  costs: EntityTable<CostRow, 'id'>
 }
 
 db.version(1).stores({
@@ -102,6 +121,9 @@ db.version(2)
     }
   })
 
+// v3: pos estimasi biaya bisa ditambah/dihapus
+db.version(3).stores({ costs: '++id, uid, order' })
+
 export const DEFAULT_TRIP: Trip = {
   id: 'main',
   name: 'Umroh pertamaku',
@@ -120,4 +142,4 @@ export async function saveTrip(patch: Partial<Trip>) {
 }
 
 /** Hapus yang ikut tersinkron: baris ditandai, bukan dibuang. */
-export const softDelete = (table: 'checklist' | 'expenses' | 'deposits', id: number) => db[table].update(id, { deleted: true, updatedAt: Date.now() })
+export const softDelete = (table: 'checklist' | 'expenses' | 'deposits' | 'costs', id: number) => db[table].update(id, { deleted: true, updatedAt: Date.now() })

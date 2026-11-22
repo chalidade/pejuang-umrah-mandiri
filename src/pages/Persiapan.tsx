@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, defaultUid, softDelete, stamp } from '../db'
-import { PREP_STEPS } from '../data/steps'
+import { db, defaultUid, newUid, softDelete, stamp } from '../db'
 import { DEFAULT_CHECKLIST } from '../data/checklist'
-import { useSteps } from '../lib/hooks'
+import { useStepList, useSteps } from '../lib/hooks'
+import RemoveButton from '../components/RemoveButton'
 import { Check, PageHeader, Progress, Tabs, inputClass } from '../components/ui'
 
 type Tab = 'langkah' | 'barang'
@@ -27,37 +27,50 @@ export default function Persiapan() {
 }
 
 function Langkah() {
-  const steps = useSteps()
+  const steps = useStepList()
+  const status = useSteps()
   const [open, setOpen] = useState<string | null>(null)
-  const done = PREP_STEPS.filter((s) => steps.get(s.id)?.done).length
+  const [title, setTitle] = useState('')
+  const [when, setWhen] = useState('')
+  const done = steps.filter((s) => s.done).length
 
-  const toggle = (id: string) => db.steps.put({ id, done: !steps.get(id)?.done, updatedAt: Date.now() })
+  const toggle = (id: string) => db.steps.put({ ...status.get(id), id, done: !status.get(id)?.done, updatedAt: Date.now() })
+  const remove = (id: string) => db.steps.put({ ...status.get(id), id, done: !!status.get(id)?.done, deleted: true, updatedAt: Date.now() })
+
+  const add = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!title.trim()) return
+    await db.steps.put({ id: newUid(), custom: true, title: title.trim(), when: when.trim(), done: false, order: Date.now(), updatedAt: Date.now() })
+    setTitle('')
+    setWhen('')
+  }
 
   return (
     <div className="px-5">
       <div className="mb-4">
-        <Progress value={done / PREP_STEPS.length} />
+        <Progress value={steps.length ? done / steps.length : 0} />
         <p className="mt-2 text-sm text-redup tabular-nums">
-          {done} dari {PREP_STEPS.length} langkah selesai
+          {done} dari {steps.length} langkah selesai
         </p>
       </div>
+      {steps.length === 0 && <p className="mb-4 rounded-2xl bg-nabawi-muda p-4 text-sm">Belum ada langkah. Tambahkan langkah persiapanmu di bawah.</p>}
       <ol className="space-y-2">
-        {PREP_STEPS.map((s, i) => {
-          const isDone = !!steps.get(s.id)?.done
+        {steps.map((s, i) => {
           const isOpen = open === s.id
           return (
             <li key={s.id} className="rounded-2xl bg-white border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
-              <div className="flex items-start gap-3 p-4">
-                <button onClick={() => toggle(s.id)} aria-label={isDone ? `Tandai belum: ${s.title}` : `Tandai selesai: ${s.title}`} className="mt-0.5">
-                  <Check checked={isDone} />
+              <div className="flex items-start gap-3 py-4 pr-2 pl-4">
+                <button onClick={() => toggle(s.id)} aria-label={s.done ? `Tandai belum: ${s.title}` : `Tandai selesai: ${s.title}`} className="mt-0.5">
+                  <Check checked={s.done} />
                 </button>
                 <button className="min-w-0 flex-1 text-left" onClick={() => setOpen(isOpen ? null : s.id)} aria-expanded={isOpen}>
                   <p className="text-xs font-semibold text-redup tabular-nums">Langkah {i + 1}</p>
-                  <p className={`font-semibold ${isDone ? 'text-redup line-through' : ''}`}>{s.title}</p>
-                  <p className="text-sm text-redup">{s.when}</p>
+                  <p className={`font-semibold ${s.done ? 'text-redup line-through' : ''}`}>{s.title}</p>
+                  {s.when && <p className="text-sm text-redup">{s.when}</p>}
                 </button>
+                <RemoveButton label={s.title} onClick={() => remove(s.id)} />
               </div>
-              {isOpen && (
+              {isOpen && s.body && (
                 <div className="border-t border-batu px-4 pt-3 pb-4 pl-13">
                   <p className="text-[0.95rem] leading-relaxed">{s.body}</p>
                   <ul className="mt-3 space-y-1.5">
@@ -74,6 +87,18 @@ function Langkah() {
           )
         })}
       </ol>
+      <form onSubmit={add} className="mt-6 rounded-2xl bg-white p-4 border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
+        <h2 className="mb-3 font-bold">Tambah langkah</h2>
+        <div className="space-y-2">
+          <input className={inputClass} placeholder="Contoh: Buat SIM internasional" value={title} onChange={(e) => setTitle(e.target.value)} aria-label="Nama langkah" />
+          <div className="flex gap-2">
+            <input className={inputClass} placeholder="Kapan? (opsional)" value={when} onChange={(e) => setWhen(e.target.value)} aria-label="Waktu langkah" />
+            <button type="submit" className="shrink-0 rounded-xl bg-nabawi px-5 font-semibold text-white">
+              Tambah
+            </button>
+          </div>
+        </div>
+      </form>
     </div>
   )
 }
@@ -106,6 +131,7 @@ function Barang() {
       <p className="mb-4 text-sm text-redup tabular-nums">
         {doneCount} dari {items.length} barang sudah siap
       </p>
+      {items.length === 0 && <p className="mb-4 rounded-2xl bg-nabawi-muda p-4 text-sm">Daftar barang kosong. Tambahkan barang bawaanmu di bawah.</p>}
       <div className="space-y-5">
         {groups.map((g) => {
           const list = items.filter((i) => i.group === g)
@@ -115,16 +141,12 @@ function Barang() {
               <h2 className="mb-2 font-bold">{g}</h2>
               <ul className="divide-y divide-batu rounded-2xl bg-white border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
                 {list.map((it) => (
-                  <li key={it.id} className="flex items-center gap-3 px-4 py-3">
+                  <li key={it.id} className="flex items-center gap-2 py-2 pr-2 pl-4">
                     <button className="flex flex-1 items-center gap-3 text-left" onClick={() => db.checklist.update(it.id!, { done: !it.done, updatedAt: Date.now() })}>
                       <Check checked={it.done} />
                       <span className={it.done ? 'text-redup line-through' : ''}>{it.label}</span>
                     </button>
-                    {it.custom && (
-                      <button onClick={() => softDelete('checklist', it.id!)} className="text-sm text-redup" aria-label={`Hapus ${it.label}`}>
-                        Hapus
-                      </button>
-                    )}
+                    <RemoveButton label={it.label} onClick={() => softDelete('checklist', it.id!)} />
                   </li>
                 ))}
               </ul>

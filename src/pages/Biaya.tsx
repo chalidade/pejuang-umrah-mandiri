@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, saveTrip, softDelete, stamp, type ExpenseCategory } from '../db'
-import { COST_ITEMS, costOf, type Profile } from '../data/costs'
+import { db, saveTrip, softDelete, stamp, type CostKind, type ExpenseCategory } from '../db'
+import { costTotal, defaultCostRows, type Profile } from '../data/costs'
+import RemoveButton from '../components/RemoveButton'
 import { jutaan, parseAngka, riyal, rupiah, tanggal, today } from '../lib/format'
 import { toIdr, useTrip } from '../lib/hooks'
 import { Button, Field, PageHeader, Progress, Tabs, inputClass } from '../components/ui'
@@ -33,19 +34,44 @@ export default function Biaya() {
 
 const SHADES = ['#1857F0', '#5B8BFF', '#9DBBFF', '#FFB423', '#CFE0FF', '#7FA4FF', '#E3E9F4']
 
+const KIND_LABEL: Record<CostKind, string> = { sekali: 'Sekali bayar', malam: 'Per malam', hari: 'Per hari' }
+
 function Kalkulator() {
   const trip = useTrip()
   const [profile, setProfile] = useState<Profile>('hemat')
   const [days, setDays] = useState(9)
   const [people, setPeople] = useState(1)
-  const [overrides, setOverrides] = useState<Record<string, number>>({})
   const [saved, setSaved] = useState(false)
+  const [nl, setNl] = useState('')
+  const [na, setNa] = useState('')
+  const [nk, setNk] = useState<CostKind>('sekali')
+  const all = useLiveQuery(() => db.costs.orderBy('order').toArray(), [])
 
-  const rows = COST_ITEMS.map((c, i) => {
-    const unit = overrides[`${profile}:${c.id}`] ?? c.value[profile]
-    return { ...c, unit, total: costOf(c, unit, days), color: SHADES[i % SHADES.length] }
-  })
+  useEffect(() => {
+    if (all && all.length === 0) db.costs.bulkAdd(defaultCostRows())
+  }, [all])
+
+  const rows = (all ?? [])
+    .filter((c) => !c.deleted)
+    .map((c, i) => ({
+      ...c,
+      unit: c[profile],
+      total: costTotal(c.kind, c[profile], days),
+      color: SHADES[i % SHADES.length],
+      sub: c.kind === 'malam' ? `${c.hint ? c.hint + ', ' : ''}${days - 1} malam` : c.kind === 'hari' ? `${c.hint ? c.hint + ', ' : ''}${days} hari` : c.hint,
+    }))
   const perPerson = rows.reduce((a, r) => a + r.total, 0)
+
+  const setUnit = (id: number, v: number) => db.costs.update(id, { [profile]: v, updatedAt: Date.now() })
+  const addRow = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const amount = parseAngka(na)
+    if (!nl.trim()) return
+    const order = Math.max(0, ...(all ?? []).map((c) => c.order)) + 1
+    await db.costs.add({ label: nl.trim(), hint: KIND_LABEL[nk], kind: nk, hemat: amount, nyaman: amount, order, ...stamp() })
+    setNl('')
+    setNa('')
+  }
 
   const share = async () => {
     const text = `Estimasi umroh mandiri ${days} hari (${profile}): ${rupiah(perPerson)} per orang. Hitung punyamu di aplikasi Pejuang Umrah Mandiri.`
@@ -74,7 +100,7 @@ function Kalkulator() {
 
       <div className="mt-4 flex h-3 gap-[3px]" aria-hidden>
         {rows.map((r) => (
-          <i key={r.id} className="block rounded-full" style={{ width: `${(r.total / perPerson) * 100}%`, background: r.color }} />
+          <i key={r.uid} className="block rounded-full" style={{ width: `${perPerson ? (r.total / perPerson) * 100 : 0}%`, background: r.color }} />
         ))}
       </div>
 
@@ -108,26 +134,44 @@ function Kalkulator() {
       </p>
       <ul className="mt-1">
         {rows.map((r) => (
-          <li key={r.id} className="flex items-center gap-3 border-b border-garis py-2.5 last:border-0">
+          <li key={r.uid} className="flex items-center gap-2.5 border-b border-garis py-2.5 last:border-0">
             <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: r.color }} aria-hidden />
             <div className="min-w-0 flex-1">
               <p className="text-[0.92rem] font-bold">{r.label}</p>
-              <p className="text-xs text-redup">
-                {r.hint}
-                {r.perNight && `, ${days - 1} malam`}
-                {r.perDay && `, ${days} hari`}
-              </p>
+              {r.sub && <p className="text-xs text-redup">{r.sub}</p>}
             </div>
             <input
               inputMode="numeric"
               aria-label={r.label}
-              className="w-[7.250rem] rounded-xl border border-garis bg-white px-2.5 py-2 text-right text-sm font-bold tabular-nums outline-none focus:border-nabawi"
+              className="w-[6.750rem] rounded-xl border border-garis bg-white px-2.5 py-2 text-right text-sm font-bold tabular-nums outline-none focus:border-nabawi"
               value={r.unit.toLocaleString('id-ID')}
-              onChange={(e) => setOverrides({ ...overrides, [`${profile}:${r.id}`]: parseAngka(e.target.value) })}
+              onChange={(e) => setUnit(r.id!, parseAngka(e.target.value))}
             />
+            <RemoveButton label={r.label} onClick={() => softDelete('costs', r.id!)} />
           </li>
         ))}
       </ul>
+      {rows.length === 0 && all && <p className="rounded-2xl bg-nabawi-muda p-4 text-sm">Belum ada pos biaya. Tambahkan di bawah.</p>}
+
+      <form onSubmit={addRow} className="mt-3 space-y-2 rounded-2xl border border-dashed border-langit p-3.5">
+        <p className="text-sm font-bold">Tambah pos biaya</p>
+        <div className="flex gap-2">
+          <input className={inputClass} placeholder="Contoh: Ziarah Thaif" value={nl} onChange={(e) => setNl(e.target.value)} aria-label="Nama pos biaya" />
+          <input inputMode="numeric" className={`${inputClass} w-32`} placeholder="Rp" value={na ? parseAngka(na).toLocaleString('id-ID') : ''} onChange={(e) => setNa(e.target.value)} aria-label="Nominal" />
+        </div>
+        <div className="flex gap-2">
+          <select className={inputClass} value={nk} onChange={(e) => setNk(e.target.value as CostKind)} aria-label="Cara hitung">
+            {(Object.keys(KIND_LABEL) as CostKind[]).map((k) => (
+              <option key={k} value={k}>
+                {KIND_LABEL[k]}
+              </option>
+            ))}
+          </select>
+          <button type="submit" className="shrink-0 rounded-xl bg-nabawi px-5 font-semibold text-white">
+            Tambah
+          </button>
+        </div>
+      </form>
 
       <div className="mt-4 flex gap-2">
         <button

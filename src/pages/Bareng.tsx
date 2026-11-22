@@ -66,7 +66,7 @@ export default function Bareng() {
 
         <section className="rounded-[22px] border border-garis p-4 shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
           <h2 className="text-lg font-bold">Kirim dataku</h2>
-          <p className="mt-0.5 text-sm text-redup">Berisi tanggal, hotel, langkah persiapan, checklist, tabungan, dan pengeluaran.</p>
+          <p className="mt-0.5 text-sm text-redup">Berisi tanggal, hotel, langkah persiapan, checklist, estimasi biaya, tabungan, dan pengeluaran.</p>
           <div className="mt-3 flex gap-2">
             <Button className="flex-1" onClick={() => send('share')}>
               Kirim ke partner

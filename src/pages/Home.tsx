@@ -1,9 +1,8 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Link } from 'react-router-dom'
 import { db } from '../db'
-import { PREP_STEPS } from '../data/steps'
 import { daysUntil, jutaan, tanggal } from '../lib/format'
-import { toIdr, useSteps, useTrip } from '../lib/hooks'
+import { toIdr, useStepList, useTrip } from '../lib/hooks'
 
 const SHORTCUTS = [
   { to: '/ibadah', label: 'Panduan', icon: 'M4 5.500C7 4 10 4.500 12 6c2-1.500 5-2 8-.5V19c-3-1.500-6-1-8 .5-2-1.500-5-2-8-.5zM12 6v13.500' },
@@ -26,14 +25,14 @@ function Skyline() {
 
 export default function Home() {
   const trip = useTrip()
-  const steps = useSteps()
+  const steps = useStepList()
   const deposits = useLiveQuery(() => db.deposits.filter((d) => !d.deleted).toArray(), []) ?? []
   const expenses = useLiveQuery(() => db.expenses.filter((e) => !e.deleted).toArray(), []) ?? []
 
   const days = daysUntil(trip.departDate)
-  const doneCount = PREP_STEPS.filter((s) => steps.get(s.id)?.done).length
-  const nextIndex = PREP_STEPS.findIndex((s) => !steps.get(s.id)?.done)
-  const next = PREP_STEPS[nextIndex]
+  const doneCount = steps.filter((s) => s.done).length
+  const nextIndex = steps.findIndex((s) => !s.done)
+  const next = steps[nextIndex]
   const saved = deposits.reduce((a, d) => a + d.amount, 0)
   const spent = expenses.reduce((a, e) => a + toIdr(e.amount, e.currency, trip.sarRate), 0)
   const savedPct = trip.savingsTarget ? Math.min(Math.round((saved / trip.savingsTarget) * 100), 100) : 0
@@ -97,12 +96,12 @@ export default function Home() {
         <div className="flex justify-between text-sm font-bold">
           <span>Persiapan</span>
           <span className="text-nabawi tabular-nums">
-            {doneCount} dari {PREP_STEPS.length}
+            {doneCount} dari {steps.length}
           </span>
         </div>
         <div className="mt-2.5 flex gap-1.5" aria-hidden>
-          {PREP_STEPS.map((s) => (
-            <i key={s.id} className={`h-1.5 flex-1 rounded-full ${steps.get(s.id)?.done ? 'bg-nabawi' : 'bg-langit'}`} />
+          {steps.map((s) => (
+            <i key={s.id} className={`h-1.5 flex-1 rounded-full ${s.done ? 'bg-nabawi' : 'bg-langit'}`} />
           ))}
         </div>
         <div className="mt-3 flex items-center gap-3 border-t border-garis pt-3">

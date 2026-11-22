@@ -1,7 +1,8 @@
 // Sinkronisasi tanpa server: seluruh data perjalanan dikemas jadi satu "kode" teks
 // yang dikirim lewat WhatsApp atau aplikasi lain, lalu digabung di perangkat partner.
 // Aturan gabung: per catatan, perubahan paling baru yang menang (last-write-wins).
-import { db, getTrip, type ChecklistItem, type Deposit, type Expense, type StepStatus, type Trip } from '../db'
+import { db, getTrip, type ChecklistItem, type CostRow, type Deposit, type Expense, type StepStatus, type Trip } from '../db'
+import { defaultCostRows } from '../data/costs'
 
 const VERSION = 1
 const PLAIN = 'PUM1:'
@@ -18,6 +19,7 @@ interface Payload {
   checklist: ChecklistItem[]
   expenses: Expense[]
   deposits: Deposit[]
+  costs?: CostRow[]
 }
 
 export interface MergeResult {
@@ -52,6 +54,7 @@ export async function exportCode(): Promise<string> {
     checklist: strip((await db.checklist.toArray()).filter((c) => c.updatedAt > 0)),
     expenses: strip(await db.expenses.toArray()),
     deposits: strip(await db.deposits.toArray()),
+    costs: strip((await db.costs.toArray()).filter((c) => c.updatedAt > 0)),
   }
   const bytes = new TextEncoder().encode(JSON.stringify(payload))
   if ('CompressionStream' in globalThis) return GZIP + toB64(await pipe(bytes, new CompressionStream('gzip')))
@@ -72,7 +75,7 @@ export async function importCode(text: string): Promise<MergeResult> {
   const remote = await decode(text)
   const res: MergeResult = { added: 0, updated: 0, removed: 0 }
 
-  await db.transaction('rw', [db.trip, db.steps, db.checklist, db.expenses, db.deposits], async () => {
+  await db.transaction('rw', [db.trip, db.steps, db.checklist, db.expenses, db.deposits, db.costs], async () => {
     const local = await getTrip()
     if ((remote.trip.updatedAt ?? 0) > (local.updatedAt ?? 0)) {
       const next: Trip = { ...local }
@@ -91,7 +94,7 @@ export async function importCode(text: string): Promise<MergeResult> {
       }
     }
 
-    const mergeTable = async <T extends { id?: number; uid: string; updatedAt: number; deleted?: boolean }>(name: 'checklist' | 'expenses' | 'deposits', rows: T[]) => {
+    const mergeTable = async <T extends { id?: number; uid: string; updatedAt: number; deleted?: boolean }>(name: 'checklist' | 'expenses' | 'deposits' | 'costs', rows: T[]) => {
       const table = db[name] as unknown as import('dexie').Table<T, number>
       const byUid = new Map((await table.toArray()).map((r) => [r.uid, r]))
       for (const r of rows ?? []) {
@@ -109,6 +112,11 @@ export async function importCode(text: string): Promise<MergeResult> {
     await mergeTable('checklist', remote.checklist)
     await mergeTable('expenses', remote.expenses)
     await mergeTable('deposits', remote.deposits)
+    if (remote.costs?.length) {
+      // pastikan pos bawaan sudah ada sebelum digabung
+      if ((await db.costs.count()) === 0) await db.costs.bulkAdd(defaultCostRows())
+      await mergeTable('costs', remote.costs)
+    }
   })
 
   try {
