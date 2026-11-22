@@ -15,7 +15,7 @@
   --color-emas-muda: #fff4db;
   --color-bata: #d6453a;
   --font-sans: 'Wix Madefor Text Variable', system-ui, sans-serif;
-  --font-display: 'Gabarito Variable', system-ui, sans-serif;
+  --font-display: 'Wix Madefor Display Variable', system-ui, sans-serif;
   --font-tulis: 'Caveat Variable', cursive;
   --font-arab: 'Amiri', serif;
 }
@@ -38,7 +38,7 @@ h1,
 h2,
 .font-display {
   font-family: var(--font-display);
-  letter-spacing: -0.015em;
+  letter-spacing: -0.03em;
 }
 
 /* Coretan tangan: catatan kecil yang menyemangati atau memberi petunjuk */

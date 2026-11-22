@@ -18,8 +18,16 @@ export default function Pengaturan() {
     <div>
       <PageHeader title="Atur perjalanan" subtitle="Semua data tersimpan di HP-mu saja." back="/" />
       <form className="space-y-4 px-5" onSubmit={(e) => e.preventDefault()}>
-        <Field label="Nama perjalanan">
-          <input className={inputClass} value={trip.name} onChange={(e) => set({ name: e.target.value })} />
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Nama panggilan">
+            <input className={inputClass} placeholder="Contoh: Chalid" value={trip.nickname ?? ''} onChange={(e) => set({ nickname: e.target.value })} />
+          </Field>
+          <Field label="Nama perjalanan">
+            <input className={inputClass} value={trip.name} onChange={(e) => set({ name: e.target.value })} />
+          </Field>
+        </div>
+        <Field label="Rute" hint="Tampil di kartu beranda.">
+          <input className={inputClass} placeholder="Jakarta ke Jeddah" value={trip.route ?? ''} onChange={(e) => set({ route: e.target.value })} />
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Tanggal berangkat">

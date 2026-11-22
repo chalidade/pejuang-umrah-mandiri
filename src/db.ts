@@ -10,6 +10,8 @@ export interface Synced {
 export interface Trip {
   id: 'main'
   name: string
+  nickname?: string // nama panggilan, hanya di perangkat ini
+  route?: string // contoh: Jakarta ke Jeddah
   departDate?: string // YYYY-MM-DD
   returnDate?: string
   travelers: number

@@ -8,7 +8,7 @@ const PLAIN = 'PUM1:'
 const GZIP = 'PUM1z:'
 
 // Yang ikut dikirim. Info medis dan kontak darurat sengaja tidak ikut.
-const SHARED_TRIP_FIELDS = ['name', 'departDate', 'returnDate', 'travelers', 'savingsTarget', 'sarRate', 'hotelMakkah', 'hotelMadinah'] as const
+const SHARED_TRIP_FIELDS = ['name', 'route', 'departDate', 'returnDate', 'travelers', 'savingsTarget', 'sarRate', 'hotelMakkah', 'hotelMadinah'] as const
 
 interface Payload {
   v: number

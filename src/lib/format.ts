@@ -21,6 +21,10 @@ export function tanggal(date: string) {
   return new Date(date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
+export function tanggalPanjang(date: string) {
+  return new Date(date + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+}
+
 export function parseAngka(v: string) {
   const n = Number(v.replace(/[^\d]/g, ''))
   return Number.isFinite(n) ? n : 0
