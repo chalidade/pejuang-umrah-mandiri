@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/pejuang-umrah-mandiri/sw.js', { scope: '/pejuang-umrah-mandiri/' })})}
