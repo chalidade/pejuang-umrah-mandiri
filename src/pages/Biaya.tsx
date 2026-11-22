@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db, normalizeExpense, saveTrip, softDelete, stamp, type Category, type CostKind, type ExpensePhase } from '../db'
+import { db, normalizeExpense, saveTrip, softDelete, stamp, type Category, type CostKind, type CostRow, type ExpensePhase } from '../db'
 import { costTotal, defaultCostRows, type Profile } from '../data/costs'
 import RemoveButton from '../components/RemoveButton'
 import { jutaan, parseAngka, riyal, rupiah, tanggal, today } from '../lib/format'
@@ -35,6 +35,8 @@ export default function Biaya() {
 const SHADES = ['#1857F0', '#5B8BFF', '#9DBBFF', '#FFB423', '#CFE0FF', '#7FA4FF', '#E3E9F4']
 
 const KIND_LABEL: Record<CostKind, string> = { sekali: 'Sekali bayar', malam: 'Per malam', hari: 'Per hari' }
+// Versi sebelumnya menyimpan nama cara hitung sebagai keterangan pos baru; anggap kosong.
+const cleanHint = (h: string) => (Object.values(KIND_LABEL).includes(h) ? '' : h)
 
 function Kalkulator() {
   const trip = useTrip()
@@ -45,6 +47,8 @@ function Kalkulator() {
   const [nl, setNl] = useState('')
   const [na, setNa] = useState('')
   const [nk, setNk] = useState<CostKind>('sekali')
+  const [nh, setNh] = useState('')
+  const [editing, setEditing] = useState<CostRow | null>(null)
   const all = useLiveQuery(() => db.costs.orderBy('order').toArray(), [])
 
   useEffect(() => {
@@ -58,7 +62,7 @@ function Kalkulator() {
       unit: c[profile],
       total: costTotal(c.kind, c[profile], days),
       color: SHADES[i % SHADES.length],
-      sub: c.kind === 'malam' ? `${c.hint ? c.hint + ', ' : ''}${days - 1} malam` : c.kind === 'hari' ? `${c.hint ? c.hint + ', ' : ''}${days} hari` : c.hint,
+      sub: [cleanHint(c.hint), c.kind === 'malam' ? `${days - 1} malam` : c.kind === 'hari' ? `${days} hari` : ''].filter(Boolean).join(', '),
     }))
   const perPerson = rows.reduce((a, r) => a + r.total, 0)
 
@@ -68,9 +72,10 @@ function Kalkulator() {
     const amount = parseAngka(na)
     if (!nl.trim()) return
     const order = Math.max(0, ...(all ?? []).map((c) => c.order)) + 1
-    await db.costs.add({ label: nl.trim(), hint: KIND_LABEL[nk], kind: nk, hemat: amount, nyaman: amount, order, ...stamp() })
+    await db.costs.add({ label: nl.trim(), hint: nh.trim(), kind: nk, hemat: amount, nyaman: amount, order, ...stamp() })
     setNl('')
     setNa('')
+    setNh('')
   }
 
   const share = async () => {
@@ -136,10 +141,15 @@ function Kalkulator() {
         {rows.map((r) => (
           <li key={r.uid} className="flex items-center gap-2.5 border-b border-garis py-2.5 last:border-0">
             <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: r.color }} aria-hidden />
-            <div className="min-w-0 flex-1">
-              <p className="text-[0.92rem] font-bold">{r.label}</p>
-              {r.sub && <p className="text-xs text-redup">{r.sub}</p>}
-            </div>
+            <button onClick={() => setEditing(r)} className="min-w-0 flex-1 text-left" aria-label={`Ubah ${r.label}`}>
+              <span className="flex items-center gap-1.5 text-[0.92rem] font-bold">
+                {r.label}
+                <svg className="shrink-0 text-[#93a0b8]" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.400" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M4 20h4L19 9l-4-4L4 16zM13.500 6.500l4 4" />
+                </svg>
+              </span>
+              {r.sub && <span className="block text-xs text-redup">{r.sub}</span>}
+            </button>
             <input
               inputMode="numeric"
               aria-label={r.label}
@@ -152,6 +162,8 @@ function Kalkulator() {
         ))}
       </ul>
       {rows.length === 0 && all && <p className="rounded-2xl bg-nabawi-muda p-4 text-sm">Belum ada pos biaya. Tambahkan di bawah.</p>}
+      {rows.length > 0 && <p className="mt-1 text-xs text-redup">Ketuk nama pos untuk mengubah nama, keterangan, atau cara hitung.</p>}
+      {editing && <CostSheet row={editing} onClose={() => setEditing(null)} />}
 
       <form onSubmit={addRow} className="mt-3 space-y-2 rounded-2xl border border-dashed border-langit p-3.5">
         <p className="text-sm font-bold">Tambah pos biaya</p>
@@ -159,6 +171,7 @@ function Kalkulator() {
           <input className={inputClass} placeholder="Contoh: Ziarah Thaif" value={nl} onChange={(e) => setNl(e.target.value)} aria-label="Nama pos biaya" />
           <input inputMode="numeric" className={`${inputClass} w-32`} placeholder="Rp" value={na ? parseAngka(na).toLocaleString('id-ID') : ''} onChange={(e) => setNa(e.target.value)} aria-label="Nominal" />
         </div>
+        <input className={inputClass} placeholder="Keterangan (opsional), misal: bus PP dari hotel" value={nh} onChange={(e) => setNh(e.target.value)} aria-label="Keterangan pos biaya" />
         <div className="flex gap-2">
           <select className={inputClass} value={nk} onChange={(e) => setNk(e.target.value as CostKind)} aria-label="Cara hitung">
             {(Object.keys(KIND_LABEL) as CostKind[]).map((k) => (
@@ -549,6 +562,63 @@ function CategorySheet({ categories, usage, onClose }: { categories: Category[];
         <button type="submit" className="shrink-0 rounded-xl bg-nabawi px-5 font-semibold text-white">
           Tambah
         </button>
+      </form>
+    </Sheet>
+  )
+}
+
+function CostSheet({ row, onClose }: { row: CostRow; onClose: () => void }) {
+  const [d, setD] = useState({ label: row.label, hint: cleanHint(row.hint), kind: row.kind, hemat: row.hemat, nyaman: row.nyaman })
+  const set = (patch: Partial<typeof d>) => setD((x) => ({ ...x, ...patch }))
+  const unit = d.kind === 'malam' ? 'per malam' : d.kind === 'hari' ? 'per hari' : ''
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!d.label.trim()) return
+    await db.costs.update(row.id!, { ...d, label: d.label.trim(), hint: d.hint.trim(), updatedAt: Date.now() })
+    onClose()
+  }
+
+  return (
+    <Sheet title="Ubah pos biaya" onClose={onClose}>
+      <form onSubmit={save} className="space-y-3 pb-5">
+        <Field label="Nama">
+          <input className={inputClass} value={d.label} onChange={(e) => set({ label: e.target.value })} />
+        </Field>
+        <Field label="Keterangan" hint="Teks kecil di bawah nama. Boleh dikosongkan.">
+          <input className={inputClass} placeholder="Misal: bus PP dari hotel" value={d.hint} onChange={(e) => set({ hint: e.target.value })} />
+        </Field>
+        <Field label="Cara hitung">
+          <select className={inputClass} value={d.kind} onChange={(e) => set({ kind: e.target.value as CostKind })}>
+            {(Object.keys(KIND_LABEL) as CostKind[]).map((k) => (
+              <option key={k} value={k}>
+                {KIND_LABEL[k]}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label={`Versi hemat ${unit}`.trim()}>
+            <input inputMode="numeric" className={inputClass} value={d.hemat.toLocaleString('id-ID')} onChange={(e) => set({ hemat: parseAngka(e.target.value) })} />
+          </Field>
+          <Field label={`Versi nyaman ${unit}`.trim()}>
+            <input inputMode="numeric" className={inputClass} value={d.nyaman.toLocaleString('id-ID')} onChange={(e) => set({ nyaman: parseAngka(e.target.value) })} />
+          </Field>
+        </div>
+        <Button type="submit" className="w-full" disabled={!d.label.trim()}>
+          Simpan perubahan
+        </Button>
+        <Button
+          type="button"
+          variant="danger"
+          className="w-full"
+          onClick={async () => {
+            await softDelete('costs', row.id!)
+            onClose()
+          }}
+        >
+          Hapus pos ini
+        </Button>
       </form>
     </Sheet>
   )
