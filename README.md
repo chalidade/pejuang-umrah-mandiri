@@ -50,7 +50,7 @@ npx cap sync         # salin dist/ ke android/ dan ios/
 
 ## Pasang di HP tanpa toko aplikasi (PWA)
 
-Versi web di GitHub Pages bisa dipasang ke layar utama dan tetap jalan offline:
+Versi web di https://pejuangumrah.my.id (GitHub Pages) bisa dipasang ke layar utama dan tetap jalan offline:
 
 - **Android (Chrome):** buka situsnya, ketuk **Pasang aplikasi** di beranda, atau menu titik tiga lalu *Instal aplikasi*.
 - **iPhone (Safari):** ketuk ikon Bagikan, lalu *Tambahkan ke Layar Utama*.
