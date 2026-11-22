@@ -1,0 +1,63 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-marmer: #f6f7f5;
+  --color-batu: #e6eae6;
+  --color-garis: #d5dbd6;
+  --color-tinta: #1d2228;
+  --color-redup: #5b6670;
+  --color-nabawi: #1f6b4f;
+  --color-nabawi-tua: #154c38;
+  --color-nabawi-muda: #e3efe8;
+  --color-emas: #b8892b;
+  --color-emas-muda: #f5ecd8;
+  --color-bata: #b3402e;
+  --font-sans: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
+  --font-arab: 'Amiri', serif;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background: var(--color-marmer);
+  color: var(--color-tinta);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-emas);
+  outline-offset: 2px;
+}
+
+.arab {
+  font-family: var(--font-arab);
+  direction: rtl;
+  line-height: 2;
+}
+
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

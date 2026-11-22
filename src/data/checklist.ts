@@ -1,0 +1,31 @@
+export const DEFAULT_CHECKLIST: Record<string, string[]> = {
+  Dokumen: [
+    'Paspor asli',
+    'Fotokopi atau foto paspor',
+    'Visa umroh (cetak dan simpan di HP)',
+    'Tiket pesawat PP',
+    'Bukti booking hotel',
+    'Sertifikat vaksin (e-ICV)',
+    'Polis asuransi perjalanan',
+    'Pas foto cadangan',
+  ],
+  Ibadah: [
+    'Kain ihram 2 helai (pria)',
+    'Mukena dan pakaian syar\'i longgar (wanita)',
+    'Sabuk ihram',
+    'Sandal yang nyaman',
+    'Tas kecil untuk sandal di masjid',
+    'Buku doa atau aplikasi ini',
+  ],
+  Pakaian: ['Pakaian untuk 5–7 hari', 'Jaket tipis', 'Kaus kaki', 'Pakaian tidur'],
+  Kesehatan: [
+    'Obat pribadi dan resep dokter',
+    'Vitamin',
+    'Masker',
+    'Pelembap bibir dan kulit tanpa wewangian',
+    'Plester untuk kaki lecet',
+    'Botol minum lipat',
+  ],
+  Elektronik: ['HP dan charger', 'Power bank', 'Colokan universal (tipe G)', 'eSIM atau kartu SIM Saudi'],
+  Uang: ['Riyal tunai untuk hari pertama', 'Kartu debit/kredit yang bisa dipakai di luar negeri'],
+}
