@@ -41,8 +41,11 @@ const cleanHint = (h: string) => (Object.values(KIND_LABEL).includes(h) ? '' : h
 function Kalkulator() {
   const trip = useTrip()
   const [profile, setProfile] = useState<Profile>('hemat')
-  const [days, setDays] = useState(9)
-  const [people, setPeople] = useState(1)
+  // Disimpan sebagai teks supaya kolom boleh kosong sementara saat diketik
+  const [daysText, setDaysText] = useState('9')
+  const [peopleText, setPeopleText] = useState('1')
+  const days = Math.min(Math.max(Number(daysText) || 1, 1), 90)
+  const people = Math.min(Math.max(Number(peopleText) || 1, 1), 50)
   const [saved, setSaved] = useState(false)
   const [nl, setNl] = useState('')
   const [na, setNa] = useState('')
@@ -111,22 +114,10 @@ function Kalkulator() {
 
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Field label="Lama perjalanan">
-          <select className={inputClass} value={days} onChange={(e) => setDays(Number(e.target.value))}>
-            {[7, 9, 10, 12, 14, 16].map((d) => (
-              <option key={d} value={d}>
-                {d} hari
-              </option>
-            ))}
-          </select>
+          <NumberUnit value={daysText} onChange={setDaysText} unit="hari" label="Lama perjalanan dalam hari" />
         </Field>
         <Field label="Jumlah orang">
-          <select className={inputClass} value={people} onChange={(e) => setPeople(Number(e.target.value))}>
-            {[1, 2, 3, 4, 5, 6].map((d) => (
-              <option key={d} value={d}>
-                {d} orang
-              </option>
-            ))}
-          </select>
+          <NumberUnit value={peopleText} onChange={setPeopleText} unit="orang" label="Jumlah orang" />
         </Field>
       </div>
 
@@ -621,5 +612,23 @@ function CostSheet({ row, onClose }: { row: CostRow; onClose: () => void }) {
         </Button>
       </form>
     </Sheet>
+  )
+}
+
+/** Kolom angka dengan satuan di dalamnya, misal "9 hari". Kosong saat diketik, kembali ke 1 saat ditinggalkan. */
+function NumberUnit({ value, onChange, unit, label }: { value: string; onChange: (v: string) => void; unit: string; label: string }) {
+  return (
+    <div className="flex items-center rounded-xl border border-garis bg-white focus-within:border-nabawi focus-within:ring-2 focus-within:ring-nabawi/20">
+      <input
+        inputMode="numeric"
+        aria-label={label}
+        className="w-full min-w-0 bg-transparent py-3 pl-3.5 text-base tabular-nums outline-none focus-visible:outline-none"
+        value={value}
+        onChange={(e) => onChange(e.target.value.replace(/[^0-9]/g, '').slice(0, 2))}
+        onBlur={() => (!Number(value) ? onChange('1') : onChange(String(Number(value))))}
+        onFocus={(e) => e.target.select()}
+      />
+      <span className="pr-3.5 text-redup">{unit}</span>
+    </div>
   )
 }

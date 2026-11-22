@@ -49,9 +49,12 @@ h2,
   color: var(--color-nabawi);
 }
 
-:focus-visible {
-  outline: 2px solid var(--color-emas);
-  outline-offset: 2px;
+/* Di layer base supaya kelas utilitas (mis. focus-visible:outline-none) bisa menimpanya */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-emas);
+    outline-offset: 2px;
+  }
 }
 
 .arab {
