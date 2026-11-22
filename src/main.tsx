@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import '@fontsource-variable/wix-madefor-text'
-import '@fontsource-variable/wix-madefor-display'
+import '@fontsource-variable/gabarito'
 import '@fontsource-variable/caveat'
 import '@fontsource/amiri/400.css'
 import './index.css'
