@@ -10,7 +10,7 @@ export default function Pengaturan() {
   const [confirm, setConfirm] = useState(false)
 
   const reset = async () => {
-    await Promise.all([db.trip.clear(), db.steps.clear(), db.checklist.clear(), db.expenses.clear(), db.deposits.clear(), db.costs.clear()])
+    await Promise.all([db.trip.clear(), db.steps.clear(), db.checklist.clear(), db.expenses.clear(), db.deposits.clear(), db.costs.clear(), db.categories.clear()])
     setConfirm(false)
   }
 

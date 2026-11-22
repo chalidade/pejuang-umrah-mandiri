@@ -56,14 +56,29 @@ export interface ChecklistItem extends Synced {
   custom?: boolean
 }
 
+/** Kategori lama (v1–v3), tetap dibaca untuk data dan sync lama. */
 export type ExpenseCategory = 'persiapan' | 'transport' | 'akomodasi' | 'makan' | 'ibadah' | 'oleh-oleh' | 'lainnya'
+
+/** Kelompok pengeluaran:
+ *  pra   = yang memberangkatkan (tiket, visa, hotel; setara biaya travel)
+ *  non   = keperluan umroh (baju, makanan, obat-obatan)
+ *  umroh = belanja dan biaya selama di Tanah Suci */
+export type ExpensePhase = 'pra' | 'non' | 'umroh'
+
+export interface Category extends Synced {
+  id?: number
+  name: string
+  order: number
+}
 
 export interface Expense extends Synced {
   id?: number
   title: string
   amount: number
   currency: 'IDR' | 'SAR'
-  category: ExpenseCategory
+  category?: ExpenseCategory
+  phase?: ExpensePhase
+  categoryUid?: string
   date: string
 }
 
@@ -81,6 +96,7 @@ export const db = new Dexie('umroh-mandiri') as Dexie & {
   expenses: EntityTable<Expense, 'id'>
   deposits: EntityTable<Deposit, 'id'>
   costs: EntityTable<CostRow, 'id'>
+  categories: EntityTable<Category, 'id'>
 }
 
 db.version(1).stores({
@@ -124,6 +140,50 @@ db.version(2)
 // v3: pos estimasi biaya bisa ditambah/dihapus
 db.version(3).stores({ costs: '++id, uid, order' })
 
+// v4: pengeluaran dikelompokkan (pra/non/umroh) dan kategorinya bisa dikelola sendiri
+export const DEFAULT_CATEGORIES: [string, string][] = [
+  ['tiket', 'Tiket pesawat'],
+  ['visa', 'Visa & dokumen'],
+  ['hotel', 'Hotel'],
+  ['transport', 'Transportasi'],
+  ['makan', 'Makan & minum'],
+  ['perlengkapan', 'Perlengkapan'],
+  ['kesehatan', 'Kesehatan'],
+  ['ibadah', 'Ibadah'],
+  ['oleh-oleh', 'Oleh-oleh'],
+  ['lainnya', 'Lainnya'],
+]
+export const categoryUid = (key: string) => `default:cat:${key}`
+const LEGACY: Record<ExpenseCategory, [string, ExpensePhase]> = {
+  persiapan: ['visa', 'pra'],
+  transport: ['transport', 'umroh'],
+  akomodasi: ['hotel', 'umroh'],
+  makan: ['makan', 'umroh'],
+  ibadah: ['ibadah', 'umroh'],
+  'oleh-oleh': ['oleh-oleh', 'umroh'],
+  lainnya: ['lainnya', 'umroh'],
+}
+/** Lengkapi pengeluaran lama (tanpa kelompok/kategori baru). */
+export function normalizeExpense<T extends Expense>(e: T): T {
+  if (e.phase && e.categoryUid) return e
+  const [key, phase] = LEGACY[e.category ?? 'lainnya'] ?? ['lainnya', 'umroh']
+  return { ...e, phase: e.phase ?? phase, categoryUid: e.categoryUid ?? categoryUid(key) }
+}
+export const defaultCategories = (): Category[] => DEFAULT_CATEGORIES.map(([k, name], i) => ({ uid: categoryUid(k), name, order: i, updatedAt: 0 }))
+
+db.version(4)
+  .stores({ categories: '++id, uid, order', expenses: '++id, date, uid, phase' })
+  .upgrade(async (tx) => {
+    await tx.table('categories').bulkAdd(defaultCategories())
+    await tx
+      .table('expenses')
+      .toCollection()
+      .modify((e) => Object.assign(e, normalizeExpense(e)))
+  })
+db.on('ready', async () => {
+  if ((await db.categories.count()) === 0) await db.categories.bulkAdd(defaultCategories())
+})
+
 export const DEFAULT_TRIP: Trip = {
   id: 'main',
   name: 'Umroh pertamaku',
@@ -142,4 +202,4 @@ export async function saveTrip(patch: Partial<Trip>) {
 }
 
 /** Hapus yang ikut tersinkron: baris ditandai, bukan dibuang. */
-export const softDelete = (table: 'checklist' | 'expenses' | 'deposits' | 'costs', id: number) => db[table].update(id, { deleted: true, updatedAt: Date.now() })
+export const softDelete = (table: 'checklist' | 'expenses' | 'deposits' | 'costs' | 'categories', id: number) => db[table].update(id, { deleted: true, updatedAt: Date.now() })
