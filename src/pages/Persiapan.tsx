@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, defaultUid, newUid, softDelete, stamp } from '../db'
 import { DEFAULT_CHECKLIST } from '../data/checklist'
-import { useStepList, useSteps } from '../lib/hooks'
+import { useStepList, useSteps, type StepItem } from '../lib/hooks'
 import RemoveButton from '../components/RemoveButton'
-import { Check, PageHeader, Progress, Tabs, inputClass } from '../components/ui'
+import Sheet from '../components/Sheet'
+import { Button, Check, Field, PageHeader, Progress, Tabs, inputClass } from '../components/ui'
 
 type Tab = 'langkah' | 'barang'
 
@@ -32,6 +33,7 @@ function Langkah() {
   const [open, setOpen] = useState<string | null>(null)
   const [title, setTitle] = useState('')
   const [when, setWhen] = useState('')
+  const [editing, setEditing] = useState<StepItem | null>(null)
   const done = steps.filter((s) => s.done).length
 
   const toggle = (id: string) => db.steps.put({ ...status.get(id), id, done: !status.get(id)?.done, updatedAt: Date.now() })
@@ -70,23 +72,33 @@ function Langkah() {
                 </button>
                 <RemoveButton label={s.title} onClick={() => remove(s.id)} />
               </div>
-              {isOpen && s.body && (
+              {isOpen && (
                 <div className="border-t border-batu px-4 pt-3 pb-4 pl-13">
-                  <p className="text-[0.95rem] leading-relaxed">{s.body}</p>
-                  <ul className="mt-3 space-y-1.5">
-                    {s.tips.map((t) => (
-                      <li key={t} className="flex gap-2 text-sm text-redup">
-                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emas" aria-hidden />
-                        {t}
-                      </li>
-                    ))}
-                  </ul>
+                  {s.body ? <p className="text-[0.95rem] leading-relaxed">{s.body}</p> : <p className="text-sm text-redup">Belum ada penjelasan.</p>}
+                  {s.tips.length > 0 && (
+                    <ul className="mt-3 space-y-1.5">
+                      {s.tips.map((t) => (
+                        <li key={t} className="flex gap-2 text-sm text-redup">
+                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emas" aria-hidden />
+                          {t}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <button onClick={() => setEditing(s)} className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-nabawi-muda px-3.5 py-2 text-sm font-semibold text-nabawi">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.400" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d="M4 20h4L19 9l-4-4L4 16zM13.500 6.500l4 4" />
+                    </svg>
+                    Ubah langkah
+                  </button>
                 </div>
               )}
             </li>
           )
         })}
       </ol>
+      {steps.length > 0 && <p className="mt-2 text-center text-xs text-redup">Ketuk judul langkah untuk melihat detail dan mengubahnya.</p>}
+      {editing && <StepSheet step={editing} onClose={() => setEditing(null)} onRemove={() => remove(editing.id)} />}
       <form onSubmit={add} className="mt-6 rounded-2xl bg-white p-4 border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
         <h2 className="mb-3 font-bold">Tambah langkah</h2>
         <div className="space-y-2">
@@ -100,6 +112,67 @@ function Langkah() {
         </div>
       </form>
     </div>
+  )
+}
+
+function StepSheet({ step, onClose, onRemove }: { step: StepItem; onClose: () => void; onRemove: () => void }) {
+  const status = useSteps()
+  const [d, setD] = useState({ title: step.title, when: step.when, body: step.body ?? '', tips: step.tips.join('\n') })
+  const set = (patch: Partial<typeof d>) => setD((x) => ({ ...x, ...patch }))
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!d.title.trim()) return
+    const cur = status.get(step.id)
+    await db.steps.put({
+      ...cur,
+      id: step.id,
+      done: !!cur?.done,
+      custom: step.custom || undefined,
+      order: cur?.order,
+      title: d.title.trim(),
+      when: d.when.trim(),
+      body: d.body.trim(),
+      tips: d.tips
+        .split('\n')
+        .map((t) => t.trim())
+        .filter(Boolean),
+      updatedAt: Date.now(),
+    })
+    onClose()
+  }
+
+  return (
+    <Sheet title="Ubah langkah" onClose={onClose}>
+      <form onSubmit={save} className="space-y-3 pb-5">
+        <Field label="Nama langkah">
+          <input className={inputClass} value={d.title} onChange={(e) => set({ title: e.target.value })} />
+        </Field>
+        <Field label="Kapan" hint="Tampil di bawah nama langkah.">
+          <input className={inputClass} placeholder="Misal: 1 minggu sebelum berangkat" value={d.when} onChange={(e) => set({ when: e.target.value })} />
+        </Field>
+        <Field label="Penjelasan" hint="Tampil saat langkah dibuka.">
+          <textarea rows={4} className={inputClass} placeholder="Apa yang perlu dilakukan di langkah ini" value={d.body} onChange={(e) => set({ body: e.target.value })} />
+        </Field>
+        <Field label="Tips" hint="Satu tips per baris. Tampil dengan titik kuning.">
+          <textarea rows={3} className={inputClass} placeholder={'Misal: Catat kurs yang kamu dapat\nBawa uang pecahan kecil'} value={d.tips} onChange={(e) => set({ tips: e.target.value })} />
+        </Field>
+        <Button type="submit" className="w-full" disabled={!d.title.trim()}>
+          Simpan perubahan
+        </Button>
+        <Button
+          type="button"
+          variant="danger"
+          className="w-full"
+          onClick={() => {
+            onRemove()
+            onClose()
+          }}
+        >
+          Hapus langkah
+        </Button>
+      </form>
+    </Sheet>
   )
 }
 

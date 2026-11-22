@@ -24,11 +24,15 @@ export interface StepItem {
 /** Langkah persiapan yang tampil: bawaan yang tidak dihapus + buatan sendiri. */
 export function useStepList(): StepItem[] {
   const status = useSteps()
-  const defaults = PREP_STEPS.filter((s) => !status.get(s.id)?.deleted).map((s) => ({ ...s, custom: false, done: !!status.get(s.id)?.done }))
+  // Langkah bawaan memakai isi yang sudah diubah pengguna kalau ada
+  const defaults = PREP_STEPS.filter((s) => !status.get(s.id)?.deleted).map((s) => {
+    const o = status.get(s.id)
+    return { id: s.id, title: o?.title ?? s.title, when: o?.when ?? s.when, body: o?.body ?? s.body, tips: o?.tips ?? s.tips, custom: false, done: !!o?.done }
+  })
   const custom = [...status.values()]
     .filter((r) => r.custom && !r.deleted)
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-    .map((r) => ({ id: r.id, title: r.title ?? 'Langkah', when: r.when ?? '', tips: [], custom: true, done: r.done }))
+    .map((r) => ({ id: r.id, title: r.title ?? 'Langkah', when: r.when ?? '', body: r.body ?? '', tips: r.tips ?? [], custom: true, done: r.done }))
   return [...defaults, ...custom]
 }
 

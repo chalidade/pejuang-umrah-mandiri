@@ -32,6 +32,8 @@ export interface StepStatus {
   custom?: boolean
   title?: string
   when?: string
+  body?: string
+  tips?: string[]
   order?: number
   deleted?: boolean
 }
