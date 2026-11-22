@@ -11,7 +11,7 @@ import ScrollTop from './components/ScrollTop'
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || '/'}>
       <ScrollTop />
       <Routes>
         <Route element={<Layout />}>
