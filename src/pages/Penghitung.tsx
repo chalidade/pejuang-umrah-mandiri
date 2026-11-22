@@ -53,7 +53,7 @@ export default function Penghitung() {
   const r = 120
   const circ = 2 * Math.PI * r
   const seg = circ / TOTAL
-  const gap = 10
+  const gap = 30
 
   const current = Math.min(count + 1, TOTAL)
   const status = done
@@ -82,7 +82,7 @@ export default function Penghitung() {
 
       <button
         onClick={tap}
-        className="mx-5 mt-5 flex flex-1 flex-col items-center justify-center rounded-3xl bg-white py-6 shadow-[0_1px_3px_rgba(29,34,40,0.08)] active:bg-nabawi-muda"
+        className="mx-5 mt-5 flex flex-1 flex-col items-center justify-center rounded-3xl bg-white py-6 border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)] active:bg-[#f4f8ff]"
         aria-label={done ? 'Selesai' : `Tambah putaran. Sekarang ${count} dari ${TOTAL}`}
       >
         <svg viewBox="0 0 300 300" className="w-[78%] max-w-[300px]" aria-hidden>
@@ -93,16 +93,16 @@ export default function Penghitung() {
               cy="150"
               r={r}
               fill="none"
-              stroke={i < count ? 'var(--color-emas)' : 'var(--color-batu)'}
+              stroke={i < count ? 'var(--color-nabawi)' : 'var(--color-nabawi-muda)'}
               strokeWidth="22"
-              strokeLinecap="butt"
+              strokeLinecap="round"
               strokeDasharray={`${seg - gap} ${circ - seg + gap}`}
               strokeDashoffset={-i * seg}
               transform="rotate(-90 150 150)"
               style={{ transition: 'stroke 200ms ease' }}
             />
           ))}
-          <text x="150" y="160" textAnchor="middle" fontSize="96" fontWeight="800" fill="var(--color-tinta)" style={{ fontVariantNumeric: 'tabular-nums' }}>
+          <text x="150" y="160" textAnchor="middle" fontSize="104" fontWeight="800" fill="var(--color-tinta)" style={{ fontVariantNumeric: 'tabular-nums', fontFamily: 'var(--font-display)' }}>
             {count}
           </text>
           <text x="150" y="200" textAnchor="middle" fontSize="18" fontWeight="600" fill="var(--color-redup)">
@@ -112,7 +112,15 @@ export default function Penghitung() {
         <p className={`mt-4 max-w-[30ch] px-4 text-center text-[0.98rem] ${done ? 'font-semibold text-nabawi' : ''}`} aria-live="polite">
           {status}
         </p>
-        {!done && <p className="mt-2 text-sm text-redup">Ketuk di mana saja di kotak ini</p>}
+        {!done && (
+          <p className="tulis mt-3 flex -rotate-2 items-center gap-2 text-[1.6rem]" aria-hidden>
+            ketuk layar tiap satu putaran
+            <svg width="30" height="30" viewBox="0 0 30 30" fill="none" stroke="currentColor" strokeWidth="2.200" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 26C18 26 25 18 25 5" />
+              <path d="M18 11l7-7 4 9" />
+            </svg>
+          </p>
+        )}
       </button>
 
       <div className="mx-5 mt-3 mb-2 grid grid-cols-2 gap-3">

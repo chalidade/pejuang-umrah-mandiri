@@ -1,18 +1,22 @@
 @import 'tailwindcss';
 
+/* Tema "Langit": biru langit Madinah di atas putih, dengan coretan tulisan tangan. */
 @theme {
-  --color-marmer: #f6f7f5;
-  --color-batu: #e6eae6;
-  --color-garis: #d5dbd6;
-  --color-tinta: #1d2228;
-  --color-redup: #5b6670;
-  --color-nabawi: #1f6b4f;
-  --color-nabawi-tua: #154c38;
-  --color-nabawi-muda: #e3efe8;
-  --color-emas: #b8892b;
-  --color-emas-muda: #f5ecd8;
-  --color-bata: #b3402e;
-  --font-sans: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
+  --color-marmer: #ffffff;
+  --color-batu: #e9f1ff;
+  --color-garis: #e3e9f4;
+  --color-tinta: #0b1f4b;
+  --color-redup: #66748f;
+  --color-nabawi: #1857f0;
+  --color-nabawi-tua: #0e3fc0;
+  --color-nabawi-muda: #e9f1ff;
+  --color-langit: #cfe0ff;
+  --color-emas: #ffb423;
+  --color-emas-muda: #fff4db;
+  --color-bata: #d6453a;
+  --font-sans: 'Wix Madefor Text Variable', system-ui, sans-serif;
+  --font-display: 'Wix Madefor Display Variable', system-ui, sans-serif;
+  --font-tulis: 'Caveat Variable', cursive;
   --font-arab: 'Amiri', serif;
 }
 
@@ -28,6 +32,21 @@ body {
   font-family: var(--font-sans);
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Coretan tangan: catatan kecil yang menyemangati atau memberi petunjuk */
+.tulis {
+  font-family: var(--font-tulis);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--color-nabawi);
 }
 
 :focus-visible {

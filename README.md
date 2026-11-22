@@ -99,7 +99,7 @@ Di Xcode: pilih Team di *Signing & Capabilities*, atur versi/build, lalu *Produc
 
 - App ID / package: `com.chalidade.pejuangumrah` (tidak bisa diganti setelah rilis di Play Store)
 - Nama di HP: Pejuang Umrah
-- Warna: hijau Nabawi `#1F6B4F`, emas kiswah `#B8892B`, putih marmer `#F6F7F5`
+- Warna: biru langit `#1857F0`, kuning matahari `#FFB423`, putih `#FFFFFF` (tema "Langit" dengan coretan tulisan tangan Caveat)
 
 ## Roadmap berikutnya
 

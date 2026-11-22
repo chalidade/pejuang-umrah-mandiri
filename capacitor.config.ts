@@ -5,10 +5,10 @@ const config: CapacitorConfig = {
   appName: 'Pejuang Umrah',
   webDir: 'dist',
   android: {
-    backgroundColor: '#F6F7F5',
+    backgroundColor: '#FFFFFF',
   },
   ios: {
-    backgroundColor: '#F6F7F5',
+    backgroundColor: '#FFFFFF',
     contentInset: 'never',
   },
 }

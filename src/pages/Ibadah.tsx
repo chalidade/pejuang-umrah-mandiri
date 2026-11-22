@@ -12,7 +12,7 @@ export default function Ibadah() {
       <div className="px-5">
         <Link to="/ibadah/hitung" className="flex items-center gap-4 rounded-2xl bg-nabawi p-4 text-white">
           <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden>
-            <circle cx="26" cy="26" r="21" fill="none" stroke="#B8892B" strokeWidth="5" strokeDasharray="15.6 3.25" transform="rotate(-90 26 26)" />
+            <circle cx="26" cy="26" r="21" fill="none" stroke="#FFB423" strokeWidth="5" strokeDasharray="15.6 3.25" transform="rotate(-90 26 26)" />
           </svg>
           <div>
             <p className="font-bold">Penghitung tawaf & sa'i</p>
@@ -26,7 +26,7 @@ export default function Ibadah() {
         <ol className="relative space-y-2">
           {steps.map((s, i) => (
             <li key={s.id}>
-              <Link to={`/ibadah/${s.id}`} className="flex gap-4 rounded-2xl bg-white p-4 shadow-[0_1px_3px_rgba(29,34,40,0.08)]">
+              <Link to={`/ibadah/${s.id}`} className="flex gap-4 rounded-2xl bg-white p-4 border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-nabawi-muda text-sm font-bold text-nabawi tabular-nums">{i + 1}</span>
                 <span>
                   <span className="block font-semibold">{s.title}</span>
@@ -38,7 +38,7 @@ export default function Ibadah() {
         </ol>
 
         <h2 className="mt-6 mb-3 text-lg font-bold tracking-tight">Dasar-dasar</h2>
-        <ul className="divide-y divide-batu rounded-2xl bg-white shadow-[0_1px_3px_rgba(29,34,40,0.08)]">
+        <ul className="divide-y divide-batu rounded-2xl bg-white border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
           {others.map((s) => (
             <li key={s.id}>
               <Link to={`/ibadah/${s.id}`} className="block px-4 py-3">
@@ -70,7 +70,7 @@ export function IbadahDetail() {
           </p>
         ))}
         {s.points && (
-          <ul className="space-y-2 rounded-2xl bg-white p-4 shadow-[0_1px_3px_rgba(29,34,40,0.08)]">
+          <ul className="space-y-2 rounded-2xl bg-white p-4 border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
             {s.points.map((p) => (
               <li key={p} className="flex gap-3 text-[0.97rem]">
                 <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emas" aria-hidden />

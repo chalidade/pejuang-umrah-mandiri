@@ -46,7 +46,7 @@ function Langkah() {
           const isDone = !!steps.get(s.id)?.done
           const isOpen = open === s.id
           return (
-            <li key={s.id} className="rounded-2xl bg-white shadow-[0_1px_3px_rgba(29,34,40,0.08)]">
+            <li key={s.id} className="rounded-2xl bg-white border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
               <div className="flex items-start gap-3 p-4">
                 <button onClick={() => toggle(s.id)} aria-label={isDone ? `Tandai belum: ${s.title}` : `Tandai selesai: ${s.title}`} className="mt-0.5">
                   <Check checked={isDone} />
@@ -112,7 +112,7 @@ function Barang() {
           return (
             <div key={g}>
               <h2 className="mb-2 font-bold">{g}</h2>
-              <ul className="divide-y divide-batu rounded-2xl bg-white shadow-[0_1px_3px_rgba(29,34,40,0.08)]">
+              <ul className="divide-y divide-batu rounded-2xl bg-white border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
                 {list.map((it) => (
                   <li key={it.id} className="flex items-center gap-3 px-4 py-3">
                     <button className="flex flex-1 items-center gap-3 text-left" onClick={() => db.checklist.update(it.id!, { done: !it.done })}>
@@ -131,7 +131,7 @@ function Barang() {
           )
         })}
       </div>
-      <form onSubmit={add} className="mt-6 rounded-2xl bg-white p-4 shadow-[0_1px_3px_rgba(29,34,40,0.08)]">
+      <form onSubmit={add} className="mt-6 rounded-2xl bg-white p-4 border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
         <h2 className="mb-3 font-bold">Tambah barang</h2>
         <div className="space-y-2">
           <input className={inputClass} placeholder="Contoh: payung lipat" value={draft} onChange={(e) => setDraft(e.target.value)} aria-label="Nama barang" />

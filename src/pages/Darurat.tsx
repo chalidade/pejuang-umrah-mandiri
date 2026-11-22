@@ -44,7 +44,7 @@ export default function Darurat() {
           ))}
         </div>
 
-        <div className="rounded-2xl bg-white p-4 shadow-[0_1px_3px_rgba(29,34,40,0.08)]">
+        <div className="rounded-2xl bg-white p-4 border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
           <h2 className="font-bold">Kartu alamat hotel</h2>
           <p className="mt-0.5 text-sm text-redup">Tampilkan ke sopir taksi atau petugas, lengkap dengan kalimat bahasa Arab.</p>
           <div className="mt-3 grid grid-cols-2 gap-2">
@@ -57,7 +57,7 @@ export default function Darurat() {
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white p-4 shadow-[0_1px_3px_rgba(29,34,40,0.08)]">
+        <div className="rounded-2xl bg-white p-4 border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
           <div className="flex items-baseline justify-between">
             <h2 className="font-bold">Info medis</h2>
             <Link to="/pengaturan" className="text-sm font-semibold text-nabawi">
