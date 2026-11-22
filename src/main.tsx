@@ -5,6 +5,7 @@ import '@fontsource-variable/wix-madefor-display'
 import '@fontsource-variable/caveat'
 import '@fontsource/amiri/400.css'
 import './index.css'
+import './lib/install'
 import App from './App'
 
 createRoot(document.getElementById('root')!).render(

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { db } from '../db'
 import { daysUntil, jutaan, tanggal } from '../lib/format'
 import { toIdr, useStepList, useTrip } from '../lib/hooks'
+import InstallCard from '../components/InstallCard'
 
 const SHORTCUTS = [
   { to: '/ibadah', label: 'Panduan', icon: 'M4 5.500C7 4 10 4.500 12 6c2-1.500 5-2 8-.5V19c-3-1.500-6-1-8 .5-2-1.500-5-2-8-.5zM12 6v13.500' },
@@ -64,7 +65,7 @@ export default function Home() {
 
         {days === undefined ? (
           <div className="relative">
-            <h1 className="mt-4 text-[1.7rem] leading-tight font-extrabold">Kapan kamu berangkat?</h1>
+            <h1 className="mt-4 max-w-[12ch] text-[1.7rem] leading-tight font-extrabold">Kapan kamu berangkat?</h1>
             <p className="mt-1 max-w-[26ch] text-sm text-white/85">Isi tanggalnya supaya persiapanmu bisa dihitung mundur.</p>
             <Link to="/pengaturan" className="mt-3 inline-block rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-nabawi">
               Isi tanggal berangkat
@@ -91,6 +92,10 @@ export default function Home() {
         )}
         <Skyline />
       </section>
+
+      <div className="mt-3 empty:hidden">
+        <InstallCard />
+      </div>
 
       <Link to="/persiapan" className="mt-3 block rounded-[22px] border border-garis px-4 py-3.5 shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
         <div className="flex justify-between text-sm font-bold">

@@ -14,7 +14,7 @@ export default defineConfig({
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'Pejuang Umrah Mandiri',
-        short_name: 'Pejuang Umrah Mandiri',
+        short_name: 'Pejuang Umrah',
         description: 'Teman perjalanan umroh mandiri: persiapan, biaya, dan panduan ibadah yang bisa dipakai offline.',
         lang: 'id',
         theme_color: '#1857F0',

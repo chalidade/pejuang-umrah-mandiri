@@ -48,6 +48,17 @@ npm run build        # hasil di dist/
 npx cap sync         # salin dist/ ke android/ dan ios/
 ```
 
+## Pasang di HP tanpa toko aplikasi (PWA)
+
+Versi web di GitHub Pages bisa dipasang ke layar utama dan tetap jalan offline:
+
+- **Android (Chrome):** buka situsnya, ketuk **Pasang aplikasi** di beranda, atau menu titik tiga lalu *Instal aplikasi*.
+- **iPhone (Safari):** ketuk ikon Bagikan, lalu *Tambahkan ke Layar Utama*.
+
+Kartu ajakan pasang muncul di beranda (bisa ditutup, muncul lagi setelah 14 hari) dan selalu ada di menu Atur perjalanan. Kartu tidak muncul di aplikasi Android/iOS hasil Capacitor atau saat sudah terpasang.
+
+APK untuk dicoba langsung juga tersedia: tab *Actions* → run **Android build** terbaru → *Artifacts* → `pejuang-umrah-debug-apk` (perlu login GitHub).
+
 ## Rilis Android (Google Play)
 
 Build otomatis berjalan di GitHub Actions (`.github/workflows/android.yml`) setiap push ke `main`:

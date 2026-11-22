@@ -3,6 +3,7 @@ import { db, saveTrip, type Trip } from '../db'
 import { parseAngka } from '../lib/format'
 import { useTrip } from '../lib/hooks'
 import { Button, Field, PageHeader, inputClass } from '../components/ui'
+import InstallCard from '../components/InstallCard'
 
 export default function Pengaturan() {
   const trip = useTrip()
@@ -64,6 +65,9 @@ export default function Pengaturan() {
         <Field label="Alergi atau penyakit">
           <input className={inputClass} value={trip.allergies ?? ''} onChange={(e) => set({ allergies: e.target.value })} />
         </Field>
+
+        <h2 className="pt-2 text-lg font-bold tracking-tight">Aplikasi</h2>
+        <InstallCard always />
 
         <div className="border-t border-garis pt-5">
           {confirm ? (
