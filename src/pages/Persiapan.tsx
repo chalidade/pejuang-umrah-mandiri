@@ -107,6 +107,8 @@ function Barang() {
   const all = useLiveQuery(() => db.checklist.toArray(), [])
   const [draft, setDraft] = useState('')
   const [group, setGroup] = useState(Object.keys(DEFAULT_CHECKLIST)[0])
+  const [renaming, setRenaming] = useState<{ from: string; to: string } | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => {
     if (all && all.length === 0) {
@@ -116,14 +118,37 @@ function Barang() {
 
   if (!all) return null
   const items = all.filter((i) => !i.deleted)
-  const groups = Array.from(new Set([...Object.keys(DEFAULT_CHECKLIST), ...items.map((i) => i.group)]))
+  // Kelompok = yang masih punya barang, urut sesuai bawaan lalu buatan sendiri
+  const groups = Array.from(new Set([...Object.keys(DEFAULT_CHECKLIST), ...items.map((i) => i.group)])).filter((g) => items.some((i) => i.group === g))
   const doneCount = items.filter((i) => i.done).length
+  const typed = group.trim()
+  const isNew = typed !== '' && !groups.some((g) => g.toLowerCase() === typed.toLowerCase())
 
   const add = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!draft.trim()) return
-    await db.checklist.add({ group, label: draft.trim(), done: false, custom: true, ...stamp() })
+    if (!draft.trim() || !typed) return
+    const g = groups.find((x) => x.toLowerCase() === typed.toLowerCase()) ?? typed
+    await db.checklist.add({ group: g, label: draft.trim(), done: false, custom: true, ...stamp() })
+    setGroup(g)
     setDraft('')
+  }
+
+  const rename = async () => {
+    if (!renaming) return
+    const to = renaming.to.trim()
+    if (to && to !== renaming.from) {
+      const now = Date.now()
+      await db.checklist.filter((i) => i.group === renaming.from && !i.deleted).modify({ group: to, updatedAt: now })
+      if (group === renaming.from) setGroup(to)
+    }
+    setRenaming(null)
+  }
+
+  const removeGroup = async (g: string) => {
+    const now = Date.now()
+    await db.checklist.filter((i) => i.group === g && !i.deleted).modify({ deleted: true, updatedAt: now })
+    if (group === g) setGroup('')
+    setDeleting(null)
   }
 
   return (
@@ -135,10 +160,49 @@ function Barang() {
       <div className="space-y-5">
         {groups.map((g) => {
           const list = items.filter((i) => i.group === g)
-          if (!list.length) return null
           return (
             <div key={g}>
-              <h2 className="mb-2 font-bold">{g}</h2>
+              {renaming?.from === g ? (
+                <form
+                  className="mb-2 flex gap-2"
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    rename()
+                  }}
+                >
+                  <input autoFocus className={inputClass} value={renaming.to} onChange={(e) => setRenaming({ from: g, to: e.target.value })} aria-label={`Nama baru kelompok ${g}`} />
+                  <button type="submit" className="shrink-0 rounded-xl bg-nabawi px-4 font-semibold text-white">
+                    Simpan
+                  </button>
+                  <button type="button" onClick={() => setRenaming(null)} className="shrink-0 px-1 text-sm font-semibold text-redup">
+                    Batal
+                  </button>
+                </form>
+              ) : (
+                <div className="mb-2 flex items-center gap-1">
+                  <button onClick={() => setRenaming({ from: g, to: g })} className="flex min-w-0 items-center gap-1.5 text-left font-bold" aria-label={`Ganti nama kelompok ${g}`}>
+                    <span className="truncate">{g}</span>
+                    <svg className="shrink-0 text-[#93a0b8]" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.400" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d="M4 20h4L19 9l-4-4L4 16zM13.500 6.500l4 4" />
+                    </svg>
+                  </button>
+                  <span className="ml-1 text-xs text-redup tabular-nums">{list.length}</span>
+                  <span className="flex-1" />
+                  {deleting === g ? (
+                    <span className="flex items-center gap-2 text-sm">
+                      <span className="text-redup">Hapus {list.length} barang?</span>
+                      <button onClick={() => removeGroup(g)} className="font-bold text-bata">
+                        Hapus
+                      </button>
+                      <button onClick={() => setDeleting(null)} className="font-semibold text-redup">
+                        Batal
+                      </button>
+                    </span>
+                  ) : (
+                    <RemoveButton label={`kelompok ${g}`} onClick={() => setDeleting(g)} />
+                  )}
+                </div>
+              )}
               <ul className="divide-y divide-batu rounded-2xl bg-white border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
                 {list.map((it) => (
                   <li key={it.id} className="flex items-center gap-2 py-2 pr-2 pl-4">
@@ -159,15 +223,27 @@ function Barang() {
         <div className="space-y-2">
           <input className={inputClass} placeholder="Contoh: payung lipat" value={draft} onChange={(e) => setDraft(e.target.value)} aria-label="Nama barang" />
           <div className="flex gap-2">
-            <select className={inputClass} value={group} onChange={(e) => setGroup(e.target.value)} aria-label="Kelompok">
-              {groups.map((g) => (
-                <option key={g}>{g}</option>
-              ))}
-            </select>
-            <button type="submit" className="shrink-0 rounded-xl bg-nabawi px-5 font-semibold text-white">
+            <input className={inputClass} placeholder="Kelompok, pilih atau tulis baru" value={group} onChange={(e) => setGroup(e.target.value)} aria-label="Kelompok" />
+            <button type="submit" disabled={!draft.trim() || !typed} className="shrink-0 rounded-xl bg-nabawi px-5 font-semibold text-white disabled:opacity-40">
               Tambah
             </button>
           </div>
+          {isNew && <p className="text-xs font-semibold text-nabawi">Kelompok baru "{typed}" akan dibuat.</p>}
+          {groups.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 pt-1" aria-label="Pilih kelompok">
+              {groups.map((g) => (
+                <button
+                  type="button"
+                  key={g}
+                  onClick={() => setGroup(g)}
+                  aria-pressed={g === typed}
+                  className={`rounded-full px-3 py-1.5 text-[0.8rem] font-semibold ${g === typed ? 'bg-nabawi text-white' : 'bg-nabawi-muda text-tinta'}`}
+                >
+                  {g}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </form>
     </div>
