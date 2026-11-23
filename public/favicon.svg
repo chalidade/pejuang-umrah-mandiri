@@ -1,6 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#1857F0"/>
-  <circle cx="256" cy="256" r="150" fill="none" stroke="#FFB423" stroke-width="22" stroke-dasharray="118 17" transform="rotate(-90 256 256)"/>
-  <rect x="196" y="196" width="120" height="132" rx="6" fill="#FFFFFF"/>
-  <rect x="196" y="226" width="120" height="14" fill="#FFB423"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect width="512" height="512" rx="120.87" fill="#1857F0"/><g transform="translate(256 256) scale(1.0) translate(-256 -256)"><circle cx="293.35" cy="218.65" r="120.87" fill="#FFB423"/><path d="M218.65 414.22L339.52 368.05L339.52 218.65L218.65 172.48L97.78 218.65L97.78 368.05Z" fill="#1857F0" stroke="#1857F0" stroke-width="21.797105922261178" stroke-linejoin="round"/><path d="M218.65 414.22L97.78 368.05L97.78 218.65L218.65 264.82Z" fill="#123088" stroke="#123088" stroke-width="4" stroke-linejoin="round"/><path d="M218.65 414.22L339.52 368.05L339.52 218.65L218.65 264.82Z" fill="#0B1F4B" stroke="#0B1F4B" stroke-width="4" stroke-linejoin="round"/><path d="M218.65 264.82L97.78 218.65L218.65 172.48L339.52 218.65Z" fill="#CFE0FF" stroke="#CFE0FF" stroke-width="4" stroke-linejoin="round"/><path d="M97.78 240.45L218.65 286.61L339.52 240.45L339.52 275.72L218.65 321.88L97.78 275.72Z" fill="#FFB423"/><path d="M247.18 389.85L275.72 378.95L275.72 321.88L247.18 332.78Z" fill="#FFB423"/></g></svg>

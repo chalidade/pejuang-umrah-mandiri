@@ -59,7 +59,10 @@ export default function Onboarding({ initial }: { initial: Trip | null }) {
       <div className="pt-safe pb-safe relative mx-auto flex min-h-dvh max-w-md flex-col overflow-hidden bg-nabawi px-6 text-white">
         <div className="absolute top-[12%] right-8 h-20 w-20 rounded-full bg-emas" aria-hidden />
         <div className="relative mt-[38%]">
-          <p className="text-[0.95rem] font-semibold text-white/80">Pejuang Umrah</p>
+          <p className="flex items-center gap-2.5 text-[0.95rem] font-semibold text-white/90">
+            <img src={`${import.meta.env.BASE_URL}logo/simbol-di-biru.svg`} alt="" className="h-9 w-9" />
+            Pejuang Umrah
+          </p>
           <h1 className="mt-3 text-[2.6rem] leading-[1.05] font-extrabold">Umroh mandiri, nggak pakai ribet.</h1>
           <p className="mt-4 max-w-[30ch] text-[1.02rem] leading-relaxed text-white/85">Persiapan, biaya, dan panduan ibadah dalam satu tempat. Semua tersimpan di HP-mu, tetap jalan tanpa internet.</p>
           <p className="tulis mt-6 flex -rotate-3 items-end gap-1 text-[1.6rem] !text-[#FFE08A]" aria-hidden>
