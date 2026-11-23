@@ -1,0 +1,93 @@
+name: Usulan konten
+
+# Usulan Destinasi/Tips dikirim dari aplikasi sebagai issue.
+# - Issue baru: diperiksa otomatis, diberi label "usulan-konten" dan komentar hasil pemeriksaan.
+# - Label "disetujui" (oleh pemilik/maintainer): konten diterapkan, di-commit, website di-deploy, issue ditutup.
+# Isi issue tidak pernah dimasukkan ke perintah shell; script membacanya dari file event.
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
+
+concurrency:
+  group: usulan-konten
+  cancel-in-progress: false
+
+jobs:
+  periksa:
+    if: github.event.action == 'opened' && contains(github.event.issue.body, '<!-- pum-usulan v1 -->')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ISSUE: ${{ github.event.issue.number }}
+      HASIL: /tmp/hasil.md
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Siapkan label
+        run: |
+          gh label create usulan-konten --color 1857F0 --description "Usulan konten dari aplikasi" 2>/dev/null || true
+          gh label create disetujui --color 2DA44E --description "Terapkan usulan konten ini" 2>/dev/null || true
+          gh issue edit "$ISSUE" --add-label usulan-konten
+      - name: Periksa usulan
+        run: node scripts/terapkan-usulan.ts --cek || true
+      - name: Beri komentar
+        run: gh issue comment "$ISSUE" --body-file "$HASIL"
+
+  terapkan:
+    if: github.event.action == 'labeled' && github.event.label.name == 'disetujui' && contains(github.event.issue.body, '<!-- pum-usulan v1 -->')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ISSUE: ${{ github.event.issue.number }}
+      PENYETUJU: ${{ github.event.sender.login }}
+      PENGIRIM: ${{ github.event.issue.user.login }}
+      HASIL: /tmp/hasil.md
+    steps:
+      - name: Pastikan yang menyetujui punya akses tulis
+        run: |
+          izin=$(gh api "repos/$GITHUB_REPOSITORY/collaborators/$PENYETUJU/permission" --jq .permission)
+          case "$izin" in
+            admin|maintain|write) echo "Disetujui oleh $PENYETUJU ($izin)";;
+            *) gh issue edit "$ISSUE" --repo "$GITHUB_REPOSITORY" --remove-label disetujui
+               gh issue comment "$ISSUE" --repo "$GITHUB_REPOSITORY" --body "Label **disetujui** hanya berlaku dari pemilik atau maintainer repo."
+               exit 1;;
+          esac
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Terapkan usulan
+        id: usulan
+        run: node scripts/terapkan-usulan.ts
+      - name: Commit dan deploy
+        env:
+          JUDUL: ${{ steps.usulan.outputs.judul }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/rekomendasi.json
+          if git diff --cached --quiet; then echo "Tidak ada perubahan"; else
+            git commit -m "konten: $JUDUL (usulan #$ISSUE dari @$PENGIRIM, disetujui @$PENYETUJU)"
+            git push origin HEAD:main
+          fi
+          # push oleh GITHUB_TOKEN tidak memicu workflow lain, jadi deploy dipicu manual
+          gh workflow run pages.yml --ref main
+      - name: Tutup issue
+        run: |
+          gh issue comment "$ISSUE" --body-file "$HASIL"
+          gh issue close "$ISSUE" --reason completed
+      - name: Kalau gagal
+        if: failure() && steps.usulan.outcome == 'failure'
+        run: |
+          gh issue comment "$ISSUE" --body-file "$HASIL"
+          gh issue edit "$ISSUE" --remove-label disetujui

@@ -4,7 +4,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Button, Field, PageHeader, Tabs, inputClass } from '../components/ui'
 import Sheet from '../components/Sheet'
-import { cekKonten, rapikan, KATEGORI_LIST, KOTA_LIST, type Konten, type TempatData, type TipData } from '../lib/konten'
+import { cekKonten, rapikan, KATEGORI_LIST, KOTA_LIST, PENANDA_USULAN, type Konten, type TempatData, type TipData, type Usulan } from '../lib/konten'
+import kontenTayang from '../data/rekomendasi.json'
 
 const REPO = 'chalidade/pejuang-umrah-mandiri'
 const BRANCH = 'main'
@@ -12,6 +13,7 @@ const PATH = 'src/data/rekomendasi.json'
 const API = `https://api.github.com/repos/${REPO}/contents/${PATH}`
 const K_TOKEN = 'pum-kelola-kunci'
 const K_DRAF = 'pum-kelola-draf'
+const K_NAMA = 'pum-kelola-nama'
 const TOKEN_URL = 'https://github.com/settings/personal-access-tokens/new'
 
 const store = {
@@ -63,7 +65,10 @@ export default function Kelola() {
     if (token && !adaDraf) muat()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!token) return <Masuk onMasuk={async (t) => { if (await muat(t)) { store.set(K_TOKEN, t); setToken(t) } }} busy={busy} error={error} />
+  const [adminMasuk, setAdminMasuk] = useState(false)
+  if (!token && adminMasuk)
+    return <Masuk onMasuk={async (t) => { if (await muat(t)) { store.set(K_TOKEN, t); setToken(t) } }} onBatal={() => { setAdminMasuk(false); setError('') }} busy={busy} error={error} />
+  if (!token) return <ModeUsulan onAdmin={() => setAdminMasuk(true)} />
 
   const keluar = () => { store.del(K_TOKEN); store.del(K_DRAF); setToken(''); setDraf(null); setError(''); setNotice('') }
 
@@ -84,13 +89,13 @@ export default function Kelola() {
   )
 }
 
-function Masuk({ onMasuk, busy, error }: { onMasuk: (t: string) => void; busy: boolean; error: string }) {
+function Masuk({ onMasuk, onBatal, busy, error }: { onMasuk: (t: string) => void; onBatal: () => void; busy: boolean; error: string }) {
   const [t, setT] = useState('')
   return (
     <div>
-      <PageHeader title="Kelola konten" subtitle="Khusus tim Pejuang Umrah." back="/pengaturan" />
+      <PageHeader title="Masuk sebagai admin" subtitle="Admin bisa menerbitkan langsung tanpa persetujuan." back="/pengaturan" />
       <div className="space-y-4 px-5">
-        <p className="text-[0.97rem] leading-relaxed">Di sini kamu bisa menambah dan mengubah tempat serta tips di tab Panduan. Perubahan muncul di aplikasi semua orang sekitar 2 menit setelah kamu menekan <b>Terbitkan</b>.</p>
+        <p className="text-[0.97rem] leading-relaxed">Perubahan dari admin muncul di aplikasi semua orang sekitar 2 menit setelah menekan <b>Terbitkan</b>. Anggota tim lain cukup memakai <button onClick={onBatal} className="font-semibold text-nabawi underline">Kirim usulan</button>, tanpa kunci.</p>
         <ol className="space-y-3 rounded-2xl border border-garis bg-white p-4 text-[0.95rem]">
           <li className="flex gap-3"><Nomor n={1} /><span>Pastikan kamu punya akun GitHub dan sudah <b>diundang</b> admin ke proyek ini. Cukup sekali.</span></li>
           <li className="flex gap-3"><Nomor n={2} /><span>Buat kunci akses di <a href={TOKEN_URL} target="_blank" rel="noreferrer" className="font-semibold text-nabawi underline">halaman ini</a>. Pilih repositori <b>pejuang-umrah-mandiri</b> saja, lalu di bagian izin pilih <b>Contents: Read and write</b>. Salin kunci yang muncul.</span></li>
@@ -110,13 +115,47 @@ function Masuk({ onMasuk, busy, error }: { onMasuk: (t: string) => void; busy: b
 const Nomor = ({ n }: { n: number }) => <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-nabawi-muda text-sm font-bold text-nabawi">{n}</span>
 
 type EditTarget = { jenis: 'tempat'; i: number | null } | { jenis: 'tips'; i: number | null } | null
+type Jenis = 'tempat' | 'tips'
+
+/** Daftar Destinasi/Tips dengan formulir tambah & ubah. Dipakai mode admin dan mode usulan. */
+function Daftar({ konten: k, labelSimpan, onSimpan, onHapus }: {
+  konten: Konten; labelSimpan: string
+  onSimpan: (jenis: Jenis, i: number | null, data: TempatData & TipData) => void
+  onHapus: (jenis: Jenis, i: number) => void
+}) {
+  const [tab, setTab] = useState<Jenis>('tempat')
+  const [edit, setEdit] = useState<EditTarget>(null)
+  const simpan = (jenis: Jenis, i: number | null) => (data: TempatData | TipData) => { onSimpan(jenis, i, data as TempatData & TipData); setEdit(null) }
+  const hapus = (jenis: Jenis, i: number | null) => (i == null ? undefined : () => { onHapus(jenis, i); setEdit(null) })
+  return (
+    <>
+      <Tabs value={tab} onChange={setTab} options={[{ value: 'tempat', label: `Destinasi (${k.tempat.length})` }, { value: 'tips', label: `Tips (${k.tips.length})` }]} />
+      <div className="px-5">
+        <Button className="w-full" onClick={() => setEdit({ jenis: tab, i: null })}>+ Tambah {tab === 'tempat' ? 'tempat' : 'tips'}</Button>
+        <ul className="mt-4 divide-y divide-batu rounded-2xl border border-garis bg-white">
+          {(tab === 'tempat' ? k.tempat : k.tips).map((t, i) => (
+            <li key={i}>
+              <button onClick={() => setEdit({ jenis: tab, i })} className="flex w-full items-start gap-3 px-4 py-3 text-left">
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold">{('nama' in t ? t.nama : t.judul) || 'Tanpa nama'}</span>
+                  <span className="block text-sm text-redup">{'nama' in t ? `${t.kategori} · ${t.kota}` : t.ringkas}</span>
+                </span>
+                <span className="mt-1 text-sm font-semibold text-nabawi">Ubah</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+      {edit?.jenis === 'tempat' && <TempatSheet awal={edit.i == null ? null : k.tempat[edit.i]} labelSimpan={labelSimpan} onClose={() => setEdit(null)} onSimpan={simpan('tempat', edit.i)} onHapus={hapus('tempat', edit.i)} />}
+      {edit?.jenis === 'tips' && <TipSheet awal={edit.i == null ? null : k.tips[edit.i]} labelSimpan={labelSimpan} onClose={() => setEdit(null)} onSimpan={simpan('tips', edit.i)} onHapus={hapus('tips', edit.i)} />}
+    </>
+  )
+}
 
 function Editor({ draf, setDraf, token, busy, setBusy, setError, setNotice, muat }: {
   draf: Draf; setDraf: (d: Draf | null) => void; token: string; busy: boolean
   setBusy: (b: boolean) => void; setError: (s: string) => void; setNotice: (s: string) => void; muat: () => void
 }) {
-  const [tab, setTab] = useState<'tempat' | 'tips'>('tempat')
-  const [edit, setEdit] = useState<EditTarget>(null)
   const [masalah, setMasalah] = useState<string[]>([])
   const k = draf.konten
   const berubah = useMemo(() => JSON.stringify(rapikan(k)) !== JSON.stringify(rapikan(JSON.parse(draf.asli))), [k, draf.asli])
@@ -140,28 +179,13 @@ function Editor({ draf, setDraf, token, busy, setBusy, setError, setNotice, muat
 
   return (
     <div className="pb-28">
-      <Tabs value={tab} onChange={setTab} options={[{ value: 'tempat', label: `Destinasi (${k.tempat.length})` }, { value: 'tips', label: `Tips (${k.tips.length})` }]} />
+      <Daftar konten={k} labelSimpan="Simpan"
+        onSimpan={(jenis, i, data) => {
+          if (jenis === 'tempat') { const tempat = [...k.tempat]; if (i == null) tempat.push(data); else tempat[i] = data; ubah({ ...k, tempat }) }
+          else { const tips = [...k.tips]; if (i == null) tips.push(data); else tips[i] = data; ubah({ ...k, tips }) }
+        }}
+        onHapus={(jenis, i) => ubah(jenis === 'tempat' ? { ...k, tempat: k.tempat.filter((_, j) => j !== i) } : { ...k, tips: k.tips.filter((_, j) => j !== i) })} />
       <div className="px-5">
-        <Button className="w-full" onClick={() => setEdit({ jenis: tab, i: null })}>+ Tambah {tab === 'tempat' ? 'tempat' : 'tips'}</Button>
-        <ul className="mt-4 divide-y divide-batu rounded-2xl border border-garis bg-white">
-          {tab === 'tempat'
-            ? k.tempat.map((t, i) => (
-                <li key={i}>
-                  <button onClick={() => setEdit({ jenis: 'tempat', i })} className="flex w-full items-start gap-3 px-4 py-3 text-left">
-                    <span className="min-w-0 flex-1"><span className="block font-semibold">{t.nama || 'Tanpa nama'}</span><span className="block text-sm text-redup">{t.kategori} · {t.kota}</span></span>
-                    <span className="mt-1 text-sm font-semibold text-nabawi">Ubah</span>
-                  </button>
-                </li>
-              ))
-            : k.tips.map((t, i) => (
-                <li key={i}>
-                  <button onClick={() => setEdit({ jenis: 'tips', i })} className="flex w-full items-start gap-3 px-4 py-3 text-left">
-                    <span className="min-w-0 flex-1"><span className="block font-semibold">{t.judul || 'Tanpa judul'}</span><span className="block text-sm text-redup">{t.ringkas}</span></span>
-                    <span className="mt-1 text-sm font-semibold text-nabawi">Ubah</span>
-                  </button>
-                </li>
-              ))}
-        </ul>
         <button onClick={muat} disabled={busy || berubah} className="mt-4 text-sm font-semibold text-redup disabled:opacity-40">Muat ulang versi terbaru</button>
         {masalah.length > 0 && (
           <div role="alert" className="mt-4 rounded-xl border border-bata/30 bg-bata/5 px-3 py-2.5 text-sm text-bata">
@@ -179,17 +203,6 @@ function Editor({ draf, setDraf, token, busy, setBusy, setError, setNotice, muat
             <Button onClick={terbitkan} disabled={busy}>{busy ? 'Menerbitkan…' : 'Terbitkan'}</Button>
           </div>
         </div>
-      )}
-
-      {edit?.jenis === 'tempat' && (
-        <TempatSheet awal={edit.i == null ? null : k.tempat[edit.i]} onClose={() => setEdit(null)}
-          onSimpan={(t) => { const tempat = [...k.tempat]; if (edit.i == null) tempat.push(t); else tempat[edit.i] = t; ubah({ ...k, tempat }); setEdit(null) }}
-          onHapus={edit.i == null ? undefined : () => { ubah({ ...k, tempat: k.tempat.filter((_, j) => j !== edit.i) }); setEdit(null) }} />
-      )}
-      {edit?.jenis === 'tips' && (
-        <TipSheet awal={edit.i == null ? null : k.tips[edit.i]} onClose={() => setEdit(null)}
-          onSimpan={(t) => { const tips = [...k.tips]; if (edit.i == null) tips.push(t); else tips[edit.i] = t; ubah({ ...k, tips }); setEdit(null) }}
-          onHapus={edit.i == null ? undefined : () => { ubah({ ...k, tips: k.tips.filter((_, j) => j !== edit.i) }); setEdit(null) }} />
       )}
     </div>
   )
@@ -217,11 +230,11 @@ function HapusButton({ onHapus, label }: { onHapus: () => void; label: string })
       <Button variant="danger" onClick={onHapus}>Ya, hapus</Button>
     </div>
   ) : (
-    <Button variant="danger" className="w-full" onClick={() => setYakin(true)}>Hapus {label}</Button>
+    <Button variant="danger" className="w-full" onClick={() => setYakin(true)}>{label}</Button>
   )
 }
 
-function TempatSheet({ awal, onClose, onSimpan, onHapus }: { awal: TempatData | null; onClose: () => void; onSimpan: (t: TempatData) => void; onHapus?: () => void }) {
+function TempatSheet({ awal, labelSimpan, onClose, onSimpan, onHapus }: { awal: TempatData | null; labelSimpan: string; onClose: () => void; onSimpan: (t: TempatData) => void; onHapus?: () => void }) {
   const [d, setD] = useState({
     nama: awal?.nama ?? '', kota: awal?.kota ?? KOTA_LIST[0], kategori: awal?.kategori ?? KATEGORI_LIST[0], ringkas: awal?.ringkas ?? '',
     isi: (awal?.isi ?? []).join('\n\n'), tips: (awal?.tips ?? []).join('\n'), maps: awal?.maps ?? '',
@@ -238,16 +251,16 @@ function TempatSheet({ awal, onClose, onSimpan, onHapus }: { awal: TempatData | 
         <Field label="Penjelasan" hint="Ceritakan tempatnya. Tekan Enter dua kali untuk paragraf baru."><textarea rows={6} className={inputClass} value={d.isi} onChange={(e) => set({ isi: e.target.value })} /></Field>
         <Field label="Tips (boleh kosong)" hint="Satu tips per baris."><textarea rows={4} className={inputClass} value={d.tips} onChange={(e) => set({ tips: e.target.value })} placeholder={'Contoh: Datang setelah Subuh\nBawa air minum'} /></Field>
         <Field label="Link Google Maps (boleh kosong)" hint="Kalau kosong, tombol Maps mencari otomatis dari nama tempat."><input className={inputClass} inputMode="url" value={d.maps} onChange={(e) => set({ maps: e.target.value })} placeholder="https://maps.app.goo.gl/…" /></Field>
-        <Button className="w-full" disabled={!siap} onClick={() => onSimpan({ nama: d.nama.trim(), kota: d.kota, kategori: d.kategori, ringkas: d.ringkas.trim(), isi: paragraf(d.isi), tips: baris(d.tips), maps: d.maps.trim() })}>Simpan</Button>
+        <Button className="w-full" disabled={!siap} onClick={() => onSimpan({ nama: d.nama.trim(), kota: d.kota, kategori: d.kategori, ringkas: d.ringkas.trim(), isi: paragraf(d.isi), tips: baris(d.tips), maps: d.maps.trim() })}>{labelSimpan}</Button>
         {!siap && <p className="-mt-2 text-xs text-redup">Isi nama, ringkasan, dan penjelasan dulu.</p>}
-        {onHapus && <HapusButton onHapus={onHapus} label="tempat ini" />}
-        <p className="text-xs text-redup">Belum langsung tayang. Tekan Terbitkan di bawah daftar setelah selesai.</p>
+        {onHapus && <HapusButton onHapus={onHapus} label={labelSimpan === 'Simpan' ? 'Hapus tempat ini' : 'Usulkan hapus tempat ini'} />}
+        {labelSimpan === 'Simpan' && <p className="text-xs text-redup">Belum langsung tayang. Tekan Terbitkan di bawah daftar setelah selesai.</p>}
       </div>
     </Sheet>
   )
 }
 
-function TipSheet({ awal, onClose, onSimpan, onHapus }: { awal: TipData | null; onClose: () => void; onSimpan: (t: TipData) => void; onHapus?: () => void }) {
+function TipSheet({ awal, labelSimpan, onClose, onSimpan, onHapus }: { awal: TipData | null; labelSimpan: string; onClose: () => void; onSimpan: (t: TipData) => void; onHapus?: () => void }) {
   const [d, setD] = useState({ judul: awal?.judul ?? '', ringkas: awal?.ringkas ?? '', isi: (awal?.isi ?? []).join('\n\n'), poin: (awal?.poin ?? []).join('\n') })
   const set = (p: Partial<typeof d>) => setD({ ...d, ...p })
   const siap = d.judul.trim() && d.ringkas.trim() && (d.isi.trim() || d.poin.trim())
@@ -258,10 +271,89 @@ function TipSheet({ awal, onClose, onSimpan, onHapus }: { awal: TipData | null; 
         <Field label="Ringkasan" hint="Satu kalimat pendek. Muncul di daftar."><input className={inputClass} value={d.ringkas} onChange={(e) => set({ ringkas: e.target.value })} /></Field>
         <Field label="Penjelasan" hint="Tekan Enter dua kali untuk paragraf baru."><textarea rows={5} className={inputClass} value={d.isi} onChange={(e) => set({ isi: e.target.value })} /></Field>
         <Field label="Poin-poin" hint="Satu poin per baris."><textarea rows={5} className={inputClass} value={d.poin} onChange={(e) => set({ poin: e.target.value })} /></Field>
-        <Button className="w-full" disabled={!siap} onClick={() => onSimpan({ judul: d.judul.trim(), ringkas: d.ringkas.trim(), isi: paragraf(d.isi), poin: baris(d.poin) })}>Simpan</Button>
+        <Button className="w-full" disabled={!siap} onClick={() => onSimpan({ judul: d.judul.trim(), ringkas: d.ringkas.trim(), isi: paragraf(d.isi), poin: baris(d.poin) })}>{labelSimpan}</Button>
         {!siap && <p className="-mt-2 text-xs text-redup">Isi judul, ringkasan, dan penjelasan atau poin dulu.</p>}
-        {onHapus && <HapusButton onHapus={onHapus} label="tips ini" />}
-        <p className="text-xs text-redup">Belum langsung tayang. Tekan Terbitkan di bawah daftar setelah selesai.</p>
+        {onHapus && <HapusButton onHapus={onHapus} label={labelSimpan === 'Simpan' ? 'Hapus tips ini' : 'Usulkan hapus tips ini'} />}
+        {labelSimpan === 'Simpan' && <p className="text-xs text-redup">Belum langsung tayang. Tekan Terbitkan di bawah daftar setelah selesai.</p>}
+      </div>
+    </Sheet>
+  )
+}
+
+// ── Mode usulan: tanpa kunci. Tiap perubahan dikirim sebagai issue GitHub yang sudah terisi. ──
+const ISSUE_URL = `https://github.com/${REPO}/issues/new`
+const AKSI_LABEL = { tambah: 'Tambah', ubah: 'Ubah', hapus: 'Hapus' } as const
+
+function isiIssue(u: Usulan, dari: string) {
+  const nama = u.data ? ('nama' in u.data ? u.data.nama : u.data.judul) : u.sasaran ?? ''
+  const jenis = u.jenis === 'tempat' ? 'tempat' : 'tips'
+  const judul = `Usulan konten: ${AKSI_LABEL[u.aksi].toLowerCase()} ${jenis} "${nama}"`
+  const L: string[] = [PENANDA_USULAN, `### ${AKSI_LABEL[u.aksi]} ${jenis}: ${nama}`]
+  if (dari.trim()) L.push(`Dari: ${dari.trim()}`)
+  if (u.aksi === 'ubah' && u.sasaran && u.sasaran !== nama) L.push(`Mengganti: ${u.sasaran}`)
+  if (u.data && u.jenis === 'tempat') {
+    const t = u.data
+    L.push('', `**Kota:** ${t.kota} · **Jenis:** ${t.kategori}`, `**Ringkasan:** ${t.ringkas}`, '', '**Penjelasan**', ...t.isi.flatMap((p) => [p, '']))
+    if (t.tips.length) L.push('**Tips**', ...t.tips.map((x) => `- ${x}`), '')
+    if (t.maps) L.push(`**Maps:** ${t.maps}`, '')
+  }
+  if (u.data && u.jenis === 'tips') {
+    const t = u.data
+    L.push('', `**Ringkasan:** ${t.ringkas}`, '')
+    if (t.isi.length) L.push('**Penjelasan**', ...t.isi.flatMap((p) => [p, '']))
+    if (t.poin.length) L.push('**Poin**', ...t.poin.map((x) => `- ${x}`), '')
+  }
+  if (u.aksi === 'hapus') L.push('', 'Minta dihapus dari aplikasi.', '')
+  L.push('---', 'Pemilik repo: beri label **disetujui** untuk menerbitkan usulan ini.', '', '<details><summary>Data untuk sistem (jangan diubah)</summary>', '', '```json', JSON.stringify(u), '```', '', '</details>')
+  return { judul, body: L.join('\n') }
+}
+
+function ModeUsulan({ onAdmin }: { onAdmin: () => void }) {
+  const konten = kontenTayang as Konten
+  const [kirim, setKirim] = useState<Usulan | null>(null)
+  return (
+    <div>
+      <PageHeader title="Kelola konten" subtitle="Usulkan tempat dan tips untuk tab Panduan." back="/pengaturan" />
+      <div className="mx-5 mb-4 rounded-2xl border border-nabawi/20 bg-nabawi-muda p-4 text-sm leading-relaxed">
+        Tambah atau ubah konten di bawah, lalu kirim sebagai usulan. Tim admin memeriksanya dulu sebelum tayang di aplikasi. Kamu cukup punya akun GitHub.
+      </div>
+      <Daftar konten={konten} labelSimpan="Lanjut kirim usulan"
+        onSimpan={(jenis, i, data) => setKirim({ aksi: i == null ? 'tambah' : 'ubah', jenis, sasaran: i == null ? null : jenis === 'tempat' ? konten.tempat[i].nama : konten.tips[i].judul, data } as Usulan)}
+        onHapus={(jenis, i) => setKirim({ aksi: 'hapus', jenis, sasaran: jenis === 'tempat' ? konten.tempat[i].nama : konten.tips[i].judul, data: null } as Usulan)} />
+      <div className="px-5 pt-6 pb-10">
+        <button onClick={onAdmin} className="text-sm font-semibold text-redup underline">Admin? Masuk dengan kunci akses</button>
+      </div>
+      {kirim && <KirimSheet usulan={kirim} onClose={() => setKirim(null)} />}
+    </div>
+  )
+}
+
+function KirimSheet({ usulan, onClose }: { usulan: Usulan; onClose: () => void }) {
+  const [dari, setDari] = useState(() => store.get(K_NAMA) ?? '')
+  const [terkirim, setTerkirim] = useState<'' | 'url' | 'salin'>('')
+  const { judul, body } = isiIssue(usulan, dari)
+  const buka = async () => {
+    store.set(K_NAMA, dari)
+    const url = `${ISSUE_URL}?title=${encodeURIComponent(judul)}&body=${encodeURIComponent(body)}`
+    if (url.length <= 7500) { window.open(url, '_blank', 'noopener'); setTerkirim('url'); return }
+    // teks terlalu panjang untuk link: salin ke clipboard, lalu buka issue kosong
+    try { await navigator.clipboard.writeText(body) } catch { /* tetap lanjut */ }
+    window.open(`${ISSUE_URL}?title=${encodeURIComponent(judul)}&body=${encodeURIComponent('(Tempel di sini teks usulan yang sudah disalin oleh aplikasi.)')}`, '_blank', 'noopener')
+    setTerkirim('salin')
+  }
+  return (
+    <Sheet title="Kirim usulan" onClose={onClose}>
+      <div className="space-y-4 pb-6">
+        <p className="rounded-xl bg-batu px-3 py-2.5 font-semibold">{judul.replace('Usulan konten: ', '')}</p>
+        <Field label="Namamu (boleh kosong)" hint="Supaya tim tahu siapa yang mengusulkan."><input className={inputClass} value={dari} onChange={(e) => setDari(e.target.value)} placeholder="Contoh: Rina" /></Field>
+        <ol className="space-y-3 text-[0.95rem]">
+          <li className="flex gap-3"><Nomor n={1} /><span>Ketuk tombol di bawah. GitHub terbuka dengan usulan yang <b>sudah terisi</b>.</span></li>
+          <li className="flex gap-3"><Nomor n={2} /><span>Masuk atau daftar akun GitHub kalau diminta (gratis).</span></li>
+          <li className="flex gap-3"><Nomor n={3} /><span>Tekan <b>Create</b> atau <b>Submit new issue</b>. Selesai!</span></li>
+        </ol>
+        <Button className="w-full" onClick={buka}>Buka GitHub dan kirim</Button>
+        {terkirim === 'salin' && <p className="rounded-xl border border-emas/40 bg-emas-muda px-3 py-2.5 text-sm">Usulanmu panjang, jadi teksnya sudah <b>disalin</b>. Di GitHub, hapus teks yang ada di kolom isi, lalu tempel.</p>}
+        {terkirim && <p className="text-sm text-redup">Sesudah dikirim, sistem memeriksa usulanmu dan memberi komentar di GitHub. Kamu dapat notifikasi saat usulan disetujui dan tayang.</p>}
       </div>
     </Sheet>
   )
