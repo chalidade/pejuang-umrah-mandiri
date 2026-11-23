@@ -4,7 +4,7 @@ Teman perjalanan umroh mandiri untuk anak muda: persiapan dokumen, estimasi biay
 
 Satu kode web (React + Vite, PWA offline-first) dibungkus [Capacitor](https://capacitorjs.com) menjadi aplikasi **Android** dan **iOS**. Semua data pengguna tersimpan lokal di perangkat (IndexedDB via Dexie). Belum ada backend.
 
-> ⚠️ Konten panduan ibadah di `src/data/guide.ts` dan rekomendasi di `src/data/rekomendasi.ts` masih **draf** dan wajib di-review mutawwif/ustadz sebelum rilis. Jangan menyalin materi dari aplikasi lain tanpa izin tertulis.
+> ⚠️ Konten panduan ibadah di `src/data/guide.ts` dan rekomendasi di `src/data/rekomendasi.json` masih **draf** dan wajib di-review mutawwif/ustadz sebelum rilis. Jangan menyalin materi dari aplikasi lain tanpa izin tertulis.
 
 ## Fitur MVP
 
@@ -13,7 +13,7 @@ Satu kode web (React + Vite, PWA offline-first) dibungkus [Capacitor](https://ca
 | Beranda | Hitung mundur keberangkatan, progres persiapan, ringkasan tabungan & pengeluaran |
 | Persiapan | 10 langkah (paspor → riyal) dengan status, checklist barang bawaan yang bisa ditambah |
 | Biaya | Estimasi biaya hemat/nyaman (bisa diedit & dibagikan), target tabungan, pengeluaran multi-mata uang |
-| Panduan | Tiga sub-tab: **Ibadah** (urutan umroh dari miqat sampai tahallul + doa Arab/latin/arti, penghitung tawaf & sa'i dengan getaran), **Destinasi** (ziarah, kuliner, belanja di Makkah & Madinah), **Tips** (Raudhah, kereta cepat, internet, hemat) |
+| Panduan | Tiga sub-tab: **Ibadah** (urutan umroh dari miqat sampai tahallul + doa Arab/latin/arti, penghitung tawaf & sa'i dengan getaran), **Destinasi** (ziarah, kuliner, belanja di Makkah & Madinah), **Tips** (Raudhah, kereta cepat, internet, hemat). Destinasi & Tips diisi tim lewat halaman `/kelola`, lihat [KONTEN.md](KONTEN.md) |
 | Darurat | Nomor darurat Saudi, kartu alamat hotel berbahasa Arab, info medis |
 | Umroh bareng | Samakan data dengan partner lewat kode yang dikirim via WhatsApp, tanpa akun dan tanpa server |
 

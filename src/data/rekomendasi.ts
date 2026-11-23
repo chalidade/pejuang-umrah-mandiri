@@ -1,9 +1,9 @@
-// DRAF KONTEN — wajib dicek ulang (bersama mutawwif) sebelum rilis.
-// Ditulis dari pengetahuan umum. Jangan menyalin materi dari aplikasi lain tanpa izin.
-// Sengaja tanpa harga dan jam buka: dua hal itu cepat berubah.
+// Konten Destinasi & Tips. Isinya ada di rekomendasi.json dan diedit lewat halaman Kelola konten
+// (/kelola) di aplikasi. DRAF: wajib dicek ulang bersama mutawwif sebelum rilis.
+import data from './rekomendasi.json'
+import { slug, type Kategori, type Kota, type Konten } from '../lib/konten'
 
-export type Kota = 'Makkah' | 'Madinah'
-export type Kategori = 'Ziarah' | 'Kuliner' | 'Belanja'
+export type { Kota, Kategori }
 
 export interface Tempat {
   id: string
@@ -13,6 +13,7 @@ export interface Tempat {
   ringkas: string
   paragraphs: string[]
   tips?: string[]
+  maps: string
 }
 
 export interface Tip {
@@ -25,216 +26,23 @@ export interface Tip {
 
 export const REKOM_NOTE = 'Draf rekomendasi. Aturan, jadwal, dan harga bisa berubah, cek lagi sebelum berangkat.'
 
-export const TEMPAT: Tempat[] = [
-  {
-    id: 'jabal-nur',
-    nama: 'Jabal Nur dan Gua Hira',
-    kota: 'Makkah',
-    kategori: 'Ziarah',
-    ringkas: 'Gunung tempat wahyu pertama turun kepada Rasulullah.',
-    paragraphs: [
-      'Gua Hira berada di puncak Jabal Nur, di sisi timur laut Kota Makkah. Di sinilah Rasulullah biasa menyendiri dan menerima wahyu pertama.',
-      'Pendakiannya berupa anak tangga batu yang cukup curam. Bagi yang sehat, naik dan turun biasanya memakan beberapa jam.',
-    ],
-    tips: ['Naik setelah Subuh saat udara masih sejuk.', 'Bawa air minum dan pakai alas kaki yang tidak licin.', 'Ziarah ke sini bukan bagian dari ibadah umroh.'],
-  },
-  {
-    id: 'jabal-tsur',
-    nama: 'Jabal Tsur',
-    kota: 'Makkah',
-    kategori: 'Ziarah',
-    ringkas: 'Gua tempat Rasulullah dan Abu Bakar bersembunyi saat hijrah.',
-    paragraphs: [
-      'Jabal Tsur berada di selatan Makkah. Di gunung ini ada gua tempat Rasulullah dan Abu Bakar Ash-Shiddiq bersembunyi tiga malam sebelum melanjutkan hijrah ke Madinah.',
-      'Jalurnya lebih panjang dan lebih berat daripada Jabal Nur. Banyak jamaah cukup melihatnya dari bawah.',
-    ],
-    tips: ['Cocok untuk yang benar-benar fit.', 'Pergi berombongan, jangan sendirian.'],
-  },
-  {
-    id: 'arafah',
-    nama: 'Arafah, Muzdalifah, dan Mina',
-    kota: 'Makkah',
-    kategori: 'Ziarah',
-    ringkas: 'Melihat langsung tempat-tempat pelaksanaan haji.',
-    paragraphs: [
-      'Di luar musim haji, kawasan Arafah, Muzdalifah, dan Mina bisa dikunjungi dalam satu perjalanan. Di Arafah ada Jabal Rahmah, bukit yang sering jadi tujuan ziarah.',
-      'Kunjungan ini biasanya dilakukan dengan bus atau taksi sewaan setengah hari.',
-    ],
-    tips: ['Sewa taksi bersama rombongan supaya lebih hemat.', 'Sepakati rute dan harga sebelum berangkat.'],
-  },
-  {
-    id: 'quba',
-    nama: 'Masjid Quba',
-    kota: 'Madinah',
-    kategori: 'Ziarah',
-    ringkas: 'Masjid pertama yang dibangun Rasulullah.',
-    paragraphs: [
-      'Masjid Quba dibangun Rasulullah saat tiba di Madinah dalam perjalanan hijrah. Shalat di Masjid Quba memiliki keutamaan yang disebutkan dalam hadits.',
-      'Letaknya sekitar beberapa kilometer di selatan Masjid Nabawi dan mudah dijangkau dengan taksi atau bus.',
-    ],
-    tips: ['Berwudhu dari hotel, lalu shalat dua rakaat di sana.', 'Hari Sabtu pagi biasanya ramai jamaah.'],
-  },
-  {
-    id: 'uhud',
-    nama: 'Jabal Uhud dan makam syuhada',
-    kota: 'Madinah',
-    kategori: 'Ziarah',
-    ringkas: 'Lokasi Perang Uhud dan makam Hamzah bin Abdul Muthalib.',
-    paragraphs: [
-      'Di kaki Jabal Uhud terdapat makam para syuhada Perang Uhud, termasuk paman Rasulullah, Hamzah bin Abdul Muthalib. Di dekatnya ada bukit kecil Jabal Rumat, tempat pasukan pemanah berjaga.',
-      'Tempat ini bagus untuk mengenang sirah sambil melihat langsung medannya.',
-    ],
-    tips: ['Baca kisah Perang Uhud sebelum datang, supaya lebih terasa.'],
-  },
-  {
-    id: 'baqi',
-    nama: 'Pemakaman Baqi',
-    kota: 'Madinah',
-    kategori: 'Ziarah',
-    ringkas: 'Pemakaman para sahabat dan keluarga Rasulullah, di samping Masjid Nabawi.',
-    paragraphs: [
-      'Baqi Al-Gharqad berada di sisi timur Masjid Nabawi. Banyak sahabat dan keluarga Rasulullah dimakamkan di sini.',
-      'Pemakaman dibuka pada waktu-waktu tertentu, biasanya setelah Subuh atau Ashar. Umumnya hanya jamaah laki-laki yang diperbolehkan masuk.',
-    ],
-    tips: ['Ziarah kubur dengan doa yang diajarkan, tanpa meminta kepada yang dimakamkan.'],
-  },
-  {
-    id: 'pasar-kurma',
-    nama: 'Pasar kurma Madinah',
-    kota: 'Madinah',
-    kategori: 'Belanja',
-    ringkas: 'Tempat membeli kurma langsung dari penjualnya, termasuk Ajwa.',
-    paragraphs: [
-      'Madinah terkenal dengan kebun kurmanya. Di pasar kurma kamu bisa mencicipi beberapa jenis sebelum membeli, seperti Ajwa, Sukkari, Safawi, atau Mabroom.',
-      'Harga di pasar umumnya lebih murah daripada toko oleh-oleh di sekitar hotel.',
-    ],
-    tips: ['Minta dicoba dulu, penjual biasanya mempersilakan.', 'Cek batas bagasi maskapai sebelum memborong.'],
-  },
-  {
-    id: 'sekitar-nabawi',
-    nama: 'Toko sekitar Masjid Nabawi',
-    kota: 'Madinah',
-    kategori: 'Belanja',
-    ringkas: 'Sajadah, gamis, parfum, dan oleh-oleh dalam jarak jalan kaki.',
-    paragraphs: [
-      'Di sekitar Masjid Nabawi banyak toko yang menjual sajadah, gamis, kerudung, parfum, dan mainan anak. Banyak penjualnya bisa sedikit berbahasa Indonesia.',
-    ],
-    tips: ['Bandingkan harga di dua atau tiga toko.', 'Belanja di luar waktu shalat, toko tutup saat azan.'],
-  },
-  {
-    id: 'albaik',
-    nama: 'Al Baik',
-    kota: 'Makkah',
-    kategori: 'Kuliner',
-    ringkas: 'Ayam goreng khas Saudi yang hampir selalu ada antreannya.',
-    paragraphs: [
-      'Al Baik adalah jaringan ayam goreng asal Jeddah yang populer di kalangan jamaah. Gerainya ada di Makkah dan Madinah, juga di beberapa titik dekat masjid.',
-    ],
-    tips: ['Datang di luar jam setelah shalat supaya antrean lebih pendek.', 'Sausnya khas, coba yang bawang putih.'],
-  },
-  {
-    id: 'kabsah',
-    nama: 'Nasi kabsah dan mandi',
-    kota: 'Madinah',
-    kategori: 'Kuliner',
-    ringkas: 'Nasi berbumbu dengan ayam atau kambing, porsinya besar.',
-    paragraphs: [
-      'Kabsah dan mandi adalah nasi berbumbu rempah yang disajikan dengan ayam atau daging kambing. Banyak restoran di Makkah dan Madinah menyajikannya, sering dalam nampan besar untuk dimakan bersama.',
-    ],
-    tips: ['Satu porsi besar cukup untuk dua sampai tiga orang.'],
-  },
-  {
-    id: 'resto-indonesia',
-    nama: 'Rumah makan Indonesia',
-    kota: 'Makkah',
-    kategori: 'Kuliner',
-    ringkas: 'Kalau sudah kangen sambal dan nasi hangat.',
-    paragraphs: [
-      'Di sekitar kawasan hotel jamaah Indonesia di Makkah dan Madinah biasanya ada rumah makan Indonesia atau Asia Tenggara. Menunya akrab di lidah: soto, rendang, ayam penyet.',
-    ],
-    tips: ['Tanya resepsionis hotel atau sesama jamaah, mereka biasanya tahu yang terdekat.'],
-  },
-]
+const konten = data as Konten
 
-export const TIPS: Tip[] = [
-  {
-    id: 'raudhah',
-    title: 'Masuk Raudhah lewat Nusuk',
-    summary: 'Tanpa izin di aplikasi, kamu tidak bisa masuk.',
-    paragraphs: [
-      'Kunjungan ke Raudhah di Masjid Nabawi diatur dengan izin (tasrih) dari aplikasi Nusuk. Kuotanya terbatas dan cepat habis.',
-    ],
-    points: [
-      'Daftar akun Nusuk sejak di Indonesia.',
-      'Pesan slot begitu kamu tahu tanggal di Madinah, dan cek ulang beberapa hari sebelumnya.',
-      'Datang lebih awal dari jam di izin, antrean masuk cukup panjang.',
-    ],
-  },
-  {
-    id: 'kereta',
-    title: 'Makkah–Madinah naik kereta cepat',
-    summary: 'Kereta Haramain lebih cepat dan nyaman daripada bus.',
-    paragraphs: [
-      'Kereta cepat Haramain menghubungkan Makkah, Jeddah, dan Madinah. Perjalanan Makkah ke Madinah jauh lebih singkat dibanding jalan darat.',
-    ],
-    points: [
-      'Pesan tiket online lebih awal, terutama menjelang akhir pekan.',
-      'Stasiun tidak berada di samping masjid, siapkan taksi ke dan dari stasiun.',
-      'Kalau sedang ihram, perhatikan barang bawaan dan waktu miqat.',
-    ],
-  },
-  {
-    id: 'sandal',
-    title: 'Sandal aman, pintu dicatat',
-    summary: 'Dua hal kecil yang sering bikin repot.',
-    paragraphs: ['Masjidil Haram dan Masjid Nabawi punya banyak pintu yang mirip. Sandal yang ditinggal sembarangan juga mudah tertukar.'],
-    points: [
-      'Bawa kantong sandal dan simpan di tas.',
-      'Foto atau catat nomor pintu tempat kamu masuk.',
-      'Sepakati titik kumpul dengan rombongan, misalnya nomor pintu tertentu.',
-    ],
-  },
-  {
-    id: 'internet',
-    title: 'Internet dari hari pertama',
-    summary: 'eSIM atau kartu lokal, siapkan sebelum mendarat.',
-    paragraphs: ['Peta, Nusuk, dan taksi online butuh internet. Paling praktis kalau sudah aktif saat mendarat.'],
-    points: [
-      'eSIM bisa dibeli dan dipasang dari Indonesia, cek dulu HP-mu mendukung eSIM.',
-      'Kartu SIM lokal bisa dibeli di bandara, siapkan paspor untuk pendaftaran.',
-      'Unduh peta Makkah dan Madinah untuk dipakai offline.',
-    ],
-  },
-  {
-    id: 'transport',
-    title: 'Naik taksi tanpa drama',
-    summary: 'Pakai aplikasi, atau sepakati harga di awal.',
-    paragraphs: ['Taksi online seperti Uber dan Careem tersedia di Makkah dan Madinah. Taksi biasa juga banyak, tapi tarifnya ditawar.'],
-    points: [
-      'Sebutkan tujuan dan sepakati harga sebelum masuk taksi biasa.',
-      'Setelah shalat Jumat atau shalat besar, jalan sekitar masjid macet. Jalan kaki sedikit menjauh dulu.',
-    ],
-  },
-  {
-    id: 'hemat',
-    title: 'Hemat makan dan minum',
-    summary: 'Zamzam gratis, supermarket lebih murah.',
-    paragraphs: ['Air zamzam tersedia gratis di dalam dan sekitar Masjidil Haram dan Masjid Nabawi.'],
-    points: [
-      'Isi botol minum dari keran zamzam.',
-      'Beli roti, buah, dan susu di supermarket untuk sarapan.',
-      'Makan besar sekali sehari di restoran, sisanya ringan.',
-    ],
-  },
-  {
-    id: 'uang',
-    title: 'Uang tunai secukupnya',
-    summary: 'Kartu diterima luas, riyal untuk yang kecil-kecil.',
-    paragraphs: ['Banyak toko, restoran, dan taksi online menerima kartu. Uang tunai tetap berguna untuk pedagang kecil dan sedekah.'],
-    points: [
-      'Tukar riyal secukupnya sebelum berangkat.',
-      'Aktifkan transaksi luar negeri di kartu debit atau kreditmu.',
-      'Simpan uang di dua tempat terpisah.',
-    ],
-  },
-]
+export const TEMPAT: Tempat[] = konten.tempat.map((t) => ({
+  id: slug(t.nama),
+  nama: t.nama,
+  kota: t.kota,
+  kategori: t.kategori,
+  ringkas: t.ringkas,
+  paragraphs: t.isi,
+  tips: t.tips.length ? t.tips : undefined,
+  maps: t.maps,
+}))
+
+export const TIPS: Tip[] = konten.tips.map((t) => ({
+  id: slug(t.judul),
+  title: t.judul,
+  summary: t.ringkas,
+  paragraphs: t.isi,
+  points: t.poin.length ? t.poin : undefined,
+}))

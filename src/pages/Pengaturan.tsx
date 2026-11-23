@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { db, saveTrip, type Trip } from '../db'
 import { parseAngka } from '../lib/format'
 import { useTrip } from '../lib/hooks'
@@ -73,6 +74,17 @@ export default function Pengaturan() {
 
         <h2 className="pt-2 text-lg font-bold tracking-tight">Aplikasi</h2>
         <InstallCard always />
+
+        <h2 className="pt-2 text-lg font-bold tracking-tight">Untuk tim konten</h2>
+        <Link to="/kelola" className="flex items-center justify-between rounded-2xl border border-garis bg-white p-4">
+          <span>
+            <span className="block font-semibold">Kelola konten</span>
+            <span className="block text-sm text-redup">Tambah dan ubah Destinasi serta Tips di tab Panduan.</span>
+          </span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0 text-redup" aria-hidden>
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </Link>
 
         <div className="border-t border-garis pt-5">
           {confirm ? (

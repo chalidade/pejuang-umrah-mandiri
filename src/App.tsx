@@ -3,7 +3,9 @@ import Layout from './components/Layout'
 import Home from './pages/Home'
 import Persiapan from './pages/Persiapan'
 import Biaya from './pages/Biaya'
+import { lazy, Suspense } from 'react'
 import Panduan, { IbadahDetail, TempatDetail, TipDetail } from './pages/Ibadah'
+const Kelola = lazy(() => import('./pages/Kelola'))
 import Penghitung from './pages/Penghitung'
 import Darurat from './pages/Darurat'
 import Pengaturan from './pages/Pengaturan'
@@ -15,12 +17,24 @@ import { useTripRow } from './lib/hooks'
 export default function App() {
   const trip = useTripRow()
   if (trip === undefined) return null
-  if (!trip?.onboarded) return <Onboarding initial={trip} />
+  // halaman tim konten bisa dibuka langsung tanpa melewati perkenalan
+  const kelola = /\/kelola\/?$/.test(window.location.pathname)
+  if (!trip?.onboarded && !kelola) return <Onboarding initial={trip} />
 
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || '/'}>
       <ScrollTop />
       <Routes>
+        <Route
+          path="kelola"
+          element={
+            <div className="mx-auto min-h-dvh max-w-md bg-marmer">
+              <Suspense fallback={null}>
+                <Kelola />
+              </Suspense>
+            </div>
+          }
+        />
         <Route element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="persiapan" element={<Persiapan />} />

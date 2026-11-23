@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { GUIDE, REVIEW_NOTE } from '../data/guide'
 import { TEMPAT, TIPS, REKOM_NOTE, type Kota, type Kategori } from '../data/rekomendasi'
 import { PageHeader, Tabs } from '../components/ui'
+import { mapsUrl } from '../lib/konten'
 
 type Tab = 'ibadah' | 'destinasi' | 'tips'
 const TAB_OPTIONS: { value: Tab; label: string }[] = [
@@ -169,6 +170,13 @@ export function TempatDetail() {
         {t.paragraphs.map((p) => (
           <p key={p} className="max-w-[65ch] text-[1.02rem] leading-relaxed">{p}</p>
         ))}
+        <a href={mapsUrl(t)} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 rounded-xl border border-garis bg-white py-3 font-semibold text-nabawi">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" />
+            <circle cx="12" cy="9.5" r="2.5" />
+          </svg>
+          Buka di Google Maps
+        </a>
         {t.tips && (
           <>
             <h2 className="pt-2 text-lg font-bold tracking-tight">Tips</h2>
