@@ -12,7 +12,7 @@ const NAV = [
   { to: '/', label: 'Beranda', icon: 'beranda' },
   { to: '/persiapan', label: 'Persiapan', icon: 'persiapan' },
   { to: '/biaya', label: 'Biaya', icon: 'biaya' },
-  { to: '/ibadah', label: 'Ibadah', icon: 'ibadah' },
+  { to: '/ibadah', label: 'Panduan', icon: 'ibadah' },
   { to: '/darurat', label: 'Darurat', icon: 'darurat' },
 ]
 

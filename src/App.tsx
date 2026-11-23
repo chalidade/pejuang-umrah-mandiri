@@ -3,7 +3,7 @@ import Layout from './components/Layout'
 import Home from './pages/Home'
 import Persiapan from './pages/Persiapan'
 import Biaya from './pages/Biaya'
-import Ibadah, { IbadahDetail } from './pages/Ibadah'
+import Panduan, { IbadahDetail, TempatDetail, TipDetail } from './pages/Ibadah'
 import Penghitung from './pages/Penghitung'
 import Darurat from './pages/Darurat'
 import Pengaturan from './pages/Pengaturan'
@@ -25,7 +25,9 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="persiapan" element={<Persiapan />} />
           <Route path="biaya" element={<Biaya />} />
-          <Route path="ibadah" element={<Ibadah />} />
+          <Route path="ibadah" element={<Panduan />} />
+          <Route path="ibadah/tempat/:id" element={<TempatDetail />} />
+          <Route path="ibadah/tips/:id" element={<TipDetail />} />
           <Route path="ibadah/hitung" element={<Penghitung />} />
           <Route path="ibadah/:id" element={<IbadahDetail />} />
           <Route path="darurat" element={<Darurat />} />
