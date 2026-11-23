@@ -60,7 +60,8 @@ for d, m in dens.items():
     png(round_legacy, int(48*m), f'{base}/ic_launcher_round.png')
     png(fg_android, int(108*m), f'{base}/ic_launcher_foreground.png')
 bgxml = f'{REPO}/android/app/src/main/res/values/ic_launcher_background.xml'
-open(bgxml, 'w').write(open(bgxml).read().replace('#FFFFFF', BLUE))
+xml = open(bgxml).read()
+open(bgxml, 'w').write(xml.replace('#FFFFFF', BLUE))
 
 # Splash: logo di tengah, putih (terang) dan navy (gelap)
 def splash(w, h, dark):
