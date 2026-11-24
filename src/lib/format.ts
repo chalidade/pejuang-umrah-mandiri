@@ -9,6 +9,13 @@ export function jutaan(n: number) {
   return rupiah(n)
 }
 
+/** Versi paling ringkas untuk kotak kecil: Rp1,5 jt · Rp150 rb · Rp900 */
+export function ringkas(n: number) {
+  if (Math.abs(n) >= 1_000_000) return jutaan(n)
+  if (Math.abs(n) >= 1_000) return `Rp${(n / 1_000).toLocaleString('id-ID', { maximumFractionDigits: 1 })} rb`
+  return rupiah(n)
+}
+
 // Tanggal lokal perangkat (bukan UTC), supaya catatan lewat tengah malam WIB tidak mundur sehari
 export const today = () => {
   const d = new Date()

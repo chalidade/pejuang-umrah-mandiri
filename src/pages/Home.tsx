@@ -1,3 +1,4 @@
+import { Uang } from '../components/Uang'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Link } from 'react-router-dom'
 import { db } from '../db'
@@ -124,7 +125,7 @@ export default function Home() {
       <div className="mt-3 grid grid-cols-2 gap-3">
         <Link to="/biaya?tab=tabungan" className="relative rounded-[22px] bg-nabawi-muda px-4 py-3.5">
           <p className="text-[0.78rem] font-semibold text-redup">Tabungan</p>
-          <p className="font-display mt-1.5 text-[1.55rem] leading-none font-extrabold tabular-nums">{jutaan(saved)}</p>
+          <p className="font-display mt-1.5 text-[1.55rem] leading-none font-extrabold tabular-nums"><Uang n={saved} singkat /></p>
           <div className="mt-2.5 h-1.5 rounded-full bg-white">
             <div className="h-1.5 rounded-full bg-nabawi" style={{ width: `${savedPct}%` }} />
           </div>
@@ -137,7 +138,7 @@ export default function Home() {
         </Link>
         <Link to="/biaya?tab=pengeluaran" className="rounded-[22px] bg-nabawi-muda px-4 py-3.5">
           <p className="text-[0.78rem] font-semibold text-redup">Pengeluaran</p>
-          <p className="font-display mt-1.5 text-[1.55rem] leading-none font-extrabold tabular-nums">{jutaan(spent)}</p>
+          <p className="font-display mt-1.5 text-[1.55rem] leading-none font-extrabold tabular-nums"><Uang n={spent} singkat /></p>
           <div className="mt-2.5 h-1.5" />
           <p className="mt-2 text-xs text-redup">{expenses.length} catatan</p>
         </Link>

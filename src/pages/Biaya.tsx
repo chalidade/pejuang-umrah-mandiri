@@ -8,6 +8,7 @@ import Sheet from '../components/Sheet'
 import { jutaan, parseAngka, riyal, rupiah, tanggal, today } from '../lib/format'
 import { toIdr, useTrip } from '../lib/hooks'
 import { Button, Field, PageHeader, Progress, Tabs, inputClass } from '../components/ui'
+import { Uang } from '../components/Uang'
 import { IKON, IkonKategori, KUNCI_IKON, kunciIkon, warnaIkon } from '../components/IkonKategori'
 
 type Tab = 'kalkulator' | 'pengeluaran' | 'tabungan'
@@ -91,14 +92,11 @@ function Kalkulator() {
 
   return (
     <div className="px-5">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <p className="text-[0.82rem] font-semibold text-redup">
-            Per orang, {days} hari
-          </p>
-          <p className="font-display mt-1 text-[2.6rem] leading-none font-extrabold text-nabawi tabular-nums">{jutaan(perPerson)}</p>
-        </div>
-        <div className="flex rounded-full bg-nabawi-muda p-[3px] text-xs font-bold text-redup">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <p className="text-[0.82rem] font-semibold text-redup">
+          Per orang, {days} hari
+        </p>
+        <div className="flex shrink-0 rounded-full bg-nabawi-muda p-[3px] text-xs font-bold text-redup">
           {(['hemat', 'nyaman'] as Profile[]).map((p) => (
             <button key={p} onClick={() => setProfile(p)} aria-pressed={profile === p} className={`rounded-full px-3 py-1.5 capitalize ${profile === p ? 'bg-nabawi text-white' : ''}`}>
               {p}
@@ -106,6 +104,7 @@ function Kalkulator() {
           ))}
         </div>
       </div>
+      <p className="font-display mt-1.5 text-[clamp(2rem,11vw,2.6rem)] leading-none font-extrabold text-nabawi tabular-nums"><Uang n={perPerson} singkat /></p>
       {people > 1 && <p className="mt-1.5 text-sm text-redup tabular-nums">Total {people} orang: {rupiah(perPerson * people)}</p>}
 
       <div className="mt-4 flex h-3 gap-[3px]" aria-hidden>
@@ -132,9 +131,9 @@ function Kalkulator() {
       </p>
       <ul className="mt-1">
         {rows.map((r) => (
-          <li key={r.uid} className="flex items-center gap-2.5 border-b border-garis py-2.5 last:border-0">
+          <li key={r.uid} className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 border-b border-garis py-2.5 last:border-0">
             <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: r.color }} aria-hidden />
-            <button onClick={() => setEditing(r)} className="min-w-0 flex-1 text-left" aria-label={`Ubah ${r.label}`}>
+            <button onClick={() => setEditing(r)} className="min-w-0 flex-1 basis-[9rem] text-left break-words" aria-label={`Ubah ${r.label}`}>
               <span className="flex items-center gap-1.5 text-[0.92rem] font-bold">
                 {r.label}
                 <svg className="shrink-0 text-[#93a0b8]" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.400" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -143,14 +142,16 @@ function Kalkulator() {
               </span>
               {r.sub && <span className="block text-xs text-redup">{r.sub}</span>}
             </button>
-            <input
-              inputMode="numeric"
-              aria-label={r.label}
-              className="w-[6.750rem] rounded-xl border border-garis bg-white px-2.5 py-2 text-right text-sm font-bold tabular-nums outline-none focus:border-nabawi"
-              value={r.unit.toLocaleString('id-ID')}
-              onChange={(e) => setUnit(r.id!, parseAngka(e.target.value))}
-            />
-            <RemoveButton label={r.label} onClick={() => softDelete('costs', r.id!)} />
+            <span className="ml-auto flex shrink-0 items-center gap-1">
+              <input
+                inputMode="numeric"
+                aria-label={r.label}
+                className="w-[7.5em] rounded-xl border border-garis bg-white px-2.5 py-2 text-right text-sm font-bold tabular-nums outline-none focus:border-nabawi"
+                value={r.unit.toLocaleString('id-ID')}
+                onChange={(e) => setUnit(r.id!, parseAngka(e.target.value))}
+              />
+              <RemoveButton label={r.label} onClick={() => softDelete('costs', r.id!)} />
+            </span>
           </li>
         ))}
       </ul>
@@ -161,8 +162,8 @@ function Kalkulator() {
       <form onSubmit={addRow} className="mt-3 space-y-2 rounded-2xl border border-dashed border-langit p-3.5">
         <p className="text-sm font-bold">Tambah pos biaya</p>
         <div className="flex gap-2">
-          <input className={inputClass} placeholder="Contoh: Ziarah Thaif" value={nl} onChange={(e) => setNl(e.target.value)} aria-label="Nama pos biaya" />
-          <input inputMode="numeric" className={`${inputClass} w-32`} placeholder="Rp" value={na ? parseAngka(na).toLocaleString('id-ID') : ''} onChange={(e) => setNa(e.target.value)} aria-label="Nominal" />
+          <input className={`${inputClass} min-w-0`} placeholder="Contoh: Ziarah Thaif" value={nl} onChange={(e) => setNl(e.target.value)} aria-label="Nama pos biaya" />
+          <input inputMode="numeric" className={`${inputClass.replace("w-full", "")} w-[8em] shrink-0`} placeholder="Rp" value={na ? parseAngka(na).toLocaleString('id-ID') : ''} onChange={(e) => setNa(e.target.value)} aria-label="Nominal" />
         </div>
         <input className={inputClass} placeholder="Keterangan (opsional), misal: bus PP dari hotel" value={nh} onChange={(e) => setNh(e.target.value)} aria-label="Keterangan pos biaya" />
         <div className="flex gap-2">
@@ -223,7 +224,7 @@ function Tabungan() {
     <div className="px-5">
       <div className="rounded-2xl bg-white p-5 border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
         <p className="text-sm text-redup">Terkumpul</p>
-        <p className="mt-1 text-3xl font-extrabold tracking-tight tabular-nums">{rupiah(saved)}</p>
+        <p className="mt-1 text-3xl font-extrabold tracking-tight tabular-nums"><Uang n={saved} /></p>
         <div className="mt-3">
           <Progress value={trip.savingsTarget ? saved / trip.savingsTarget : 0} tone="emas" />
         </div>
@@ -239,7 +240,7 @@ function Tabungan() {
       </div>
 
       <form onSubmit={add} className="mt-4 flex gap-2">
-        <input inputMode="numeric" className={inputClass} placeholder="Nominal setoran, misal 500.000" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label="Nominal setoran" />
+        <input inputMode="numeric" className={inputClass} placeholder="Nominal setoran" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label="Nominal setoran" />
         <button type="submit" className="shrink-0 rounded-xl bg-nabawi px-5 font-semibold text-white">
           Setor
         </button>
@@ -329,7 +330,7 @@ function Pengeluaran() {
     <div className="px-5">
       <div className="rounded-[22px] border border-garis bg-white p-4 shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
         <p className="text-sm text-redup">Total pengeluaran</p>
-        <p className="font-display mt-1 text-[2rem] leading-none font-extrabold tabular-nums">{rupiah(total)}</p>
+        <p className="font-display mt-1 text-[2rem] leading-none font-extrabold tabular-nums"><Uang n={total} /></p>
         <p className="mt-1.5 text-xs text-redup tabular-nums">Kurs 1 SAR = {rupiah(trip.sarRate)}</p>
         <div className="mt-4 grid grid-cols-3 gap-2">
           {PHASES.map((ph) => {
@@ -341,10 +342,10 @@ function Pengeluaran() {
                 key={ph.value}
                 onClick={() => setFilter(active ? 'semua' : ph.value)}
                 aria-pressed={active}
-                className={`rounded-2xl px-2.5 py-2.5 text-left transition-colors ${active ? 'bg-nabawi text-white' : 'bg-nabawi-muda'}`}
+                className={`min-w-0 rounded-2xl px-2.5 py-2.5 text-left transition-colors ${active ? 'bg-nabawi text-white' : 'bg-nabawi-muda'}`}
               >
                 <span className={`block text-[0.72rem] font-bold ${active ? 'text-white/85' : 'text-redup'}`}>{ph.label}</span>
-                <span className="font-display mt-1 block text-[1.05rem] leading-tight font-extrabold tabular-nums">{jutaan(sum)}</span>
+                <span className="font-display mt-1 block text-[1.05rem] leading-tight font-extrabold tabular-nums" title={rupiah(sum)}><Uang n={sum} singkat /></span>
                 <span className={`mt-0.5 block text-[0.7rem] ${active ? 'text-white/80' : 'text-redup'}`}>{list.length} catatan</span>
               </button>
             )
@@ -355,8 +356,8 @@ function Pengeluaran() {
 
       {byCat.length > 0 && (
         <section className="mt-4 rounded-[22px] border border-garis bg-white p-4 shadow-[0_6px_18px_rgba(24,87,240,0.07)]" aria-label="Ringkasan per kategori">
-          <div className="flex items-baseline justify-between">
-            <h2 className="font-bold">Per kategori</h2>
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+            <h2 className="font-bold whitespace-nowrap">Per kategori</h2>
             <p className="text-sm text-redup tabular-nums">{filter === 'semua' ? 'Semua' : PHASES.find((p) => p.value === filter)?.label} · {rupiah(shownTotal)}</p>
           </div>
           <div className="mt-3 flex h-2.5 gap-[3px] overflow-hidden rounded-full" aria-hidden>
@@ -366,14 +367,14 @@ function Pengeluaran() {
           </div>
           <ul className="mt-2 divide-y divide-batu">
             {byCat.map((c) => (
-              <li key={c.key} className="flex items-center gap-3 py-2.5">
+              <li key={c.key} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2.5">
                 <IkonKategori kunci={c.ikon} size={40} />
-                <span className="min-w-0 flex-1">
+                <span className="min-w-0 flex-1 basis-[7rem] break-words">
                   <span className="block font-semibold leading-snug">{c.name}</span>
                   <span className="block text-xs text-redup">{c.n} catatan</span>
                 </span>
-                <span className="flex shrink-0 flex-col items-end gap-1">
-                  <span className="font-semibold tabular-nums">{rupiah(c.sum)}</span>
+                <span className="ml-auto flex shrink-0 flex-col items-end gap-1">
+                  <span className="font-semibold whitespace-nowrap tabular-nums">{rupiah(c.sum)}</span>
                   <span className="rounded-full px-2 py-0.5 text-xs font-bold tabular-nums" style={{ background: IKON[c.ikon].bg, color: IKON[c.ikon].fg }}>{persen(c.sum)}%</span>
                 </span>
               </li>

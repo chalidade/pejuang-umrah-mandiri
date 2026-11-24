@@ -20,7 +20,7 @@ export default function Pengaturan() {
     <div>
       <PageHeader title="Atur perjalanan" subtitle="Semua data tersimpan di HP-mu saja." back="/" />
       <form className="space-y-4 px-5" onSubmit={(e) => e.preventDefault()}>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 min-[420px]:grid-cols-2">
           <Field label="Namamu">
             <input className={inputClass} placeholder="Contoh: Chalid" value={trip.nickname ?? ''} onChange={(e) => set({ nickname: e.target.value })} />
           </Field>
@@ -28,7 +28,7 @@ export default function Pengaturan() {
             <input className={inputClass} value={trip.name} onChange={(e) => set({ name: e.target.value })} />
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 min-[420px]:grid-cols-2">
           <Field label="Tanggal berangkat">
             <input type="date" className={inputClass} value={trip.departDate ?? ''} onChange={(e) => set({ departDate: e.target.value || undefined })} />
           </Field>

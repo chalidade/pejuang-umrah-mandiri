@@ -29,7 +29,7 @@ export default function Layout() {
               <NavLink
                 to={n.to}
                 end={n.to === '/'}
-                className={({ isActive }) => `flex flex-col items-center gap-1 pt-2.5 pb-1 text-[0.7rem] font-semibold ${isActive ? 'text-nabawi' : 'text-[#93a0b8]'}`}
+                className={({ isActive }) => `flex min-w-0 flex-col items-center gap-1 pt-2.5 pb-1 text-[min(0.7rem,2.9vw)] font-semibold whitespace-nowrap ${isActive ? 'text-nabawi' : 'text-[#93a0b8]'}`}
               >
                 {({ isActive }) => (
                   <>

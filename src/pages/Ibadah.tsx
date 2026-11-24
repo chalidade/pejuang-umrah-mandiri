@@ -119,7 +119,7 @@ function Destinasi() {
   const list = TEMPAT.filter((t) => kota === 'Semua' || t.kota === kota)
   return (
     <div className="px-5">
-      <div className="flex gap-2" role="group" aria-label="Pilih kota">
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Pilih kota">
         {(['Semua', ...KOTA_LIST] as const).map((k) => (
           <button
             key={k}

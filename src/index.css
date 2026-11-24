@@ -98,3 +98,10 @@ input[type='date']::-webkit-date-and-time-value {
     animation: none !important;
   }
 }
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
