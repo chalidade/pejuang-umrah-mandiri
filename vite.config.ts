@@ -11,7 +11,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
+      includeAssets: ['favicon-v2.svg', 'icons/apple-touch-icon-v2.png'],
       manifest: {
         name: 'Pejuang Umrah Mandiri',
         short_name: 'Pejuang Umrah',
@@ -24,13 +24,32 @@ export default defineConfig({
         start_url: '.',
         scope: '.',
         icons: [
-          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'icons/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icons/icon-192-v2.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icons/icon-512-v2.png', sizes: '512x512', type: 'image/png' },
+          { src: 'icons/icon-512-maskable-v2.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // foto unggahan (/media) dan gambar pratinjau video disimpan setelah pertama dilihat, supaya tetap tampil offline
+        globIgnores: ['media/**'],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.startsWith('/media/'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'pum-media', expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 180 } },
+          },
+          {
+            urlPattern: ({ url }) => url.hostname === 'i.ytimg.com',
+            handler: 'CacheFirst',
+            options: { cacheName: 'pum-thumb', expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 60 }, cacheableResponse: { statuses: [0, 200] } },
+          },
+          {
+            urlPattern: ({ request, sameOrigin }) => !sameOrigin && request.destination === 'image',
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'pum-foto-luar', expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 60 }, cacheableResponse: { statuses: [0, 200] } },
+          },
+        ],
       },
     }),
   ],

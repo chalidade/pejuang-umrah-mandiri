@@ -4,7 +4,7 @@ Teman perjalanan umroh mandiri untuk anak muda: persiapan dokumen, estimasi biay
 
 Satu kode web (React + Vite, PWA offline-first) dibungkus [Capacitor](https://capacitorjs.com) menjadi aplikasi **Android** dan **iOS**. Semua data pengguna tersimpan lokal di perangkat (IndexedDB via Dexie). Belum ada backend.
 
-> ⚠️ Konten panduan ibadah di `src/data/guide.ts` dan rekomendasi di `src/data/rekomendasi.json` masih **draf** dan wajib di-review mutawwif/ustadz sebelum rilis. Jangan menyalin materi dari aplikasi lain tanpa izin tertulis.
+> ⚠️ Konten Panduan (ibadah, destinasi, tips) di `src/data/konten.json` masih **draf** dan wajib di-review mutawwif/ustadz sebelum rilis. Jangan menyalin materi dari aplikasi lain tanpa izin tertulis.
 
 ## Fitur MVP
 

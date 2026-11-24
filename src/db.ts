@@ -73,6 +73,8 @@ export interface Category extends Synced {
   id?: number
   name: string
   order: number
+  /** kunci ikon dari components/IkonKategori; kosong = ditebak dari nama */
+  icon?: string
 }
 
 export interface Expense extends Synced {

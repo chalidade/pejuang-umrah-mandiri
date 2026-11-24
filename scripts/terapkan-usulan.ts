@@ -1,12 +1,12 @@
 // Dipakai workflow "Usulan konten". Membaca issue dari GITHUB_EVENT_PATH (tidak pernah lewat shell),
-// lalu: --cek  hanya memeriksa; tanpa flag  menerapkan ke src/data/rekomendasi.json.
+// lalu: --cek  hanya memeriksa; tanpa flag  menerapkan ke src/data/konten.json.
 // Hasil untuk komentar issue ditulis ke file yang ditunjuk HASIL (markdown). Kode keluar 1 kalau gagal.
 import { readFileSync, writeFileSync, appendFileSync } from 'node:fs'
-import { PENANDA_USULAN, terapkanUsulan, type Konten, type Usulan } from '../src/lib/konten.ts'
+import { PENANDA_USULAN, terapkanUsulan, namaItem, LABEL_JENIS, type Konten, type Usulan } from '../src/lib/konten.ts'
 
 const cekSaja = process.argv.includes('--cek')
 const hasilFile = process.env.HASIL || '/tmp/hasil.md'
-const jsonFile = new URL('../src/data/rekomendasi.json', import.meta.url)
+const jsonFile = new URL('../src/data/konten.json', import.meta.url)
 
 function selesai(ok: boolean, pesan: string, judul = '') {
   writeFileSync(hasilFile, pesan + '\n')
@@ -24,8 +24,8 @@ let u: Usulan
 try { u = JSON.parse(m![1]) } catch { selesai(false, 'Bagian data usulan rusak (mungkin teksnya terubah). Kirim ulang usulan dari aplikasi.') }
 
 const konten: Konten = JSON.parse(readFileSync(jsonFile, 'utf8'))
-const nama = (u!.data && ('nama' in u!.data ? u!.data.nama : u!.data.judul)) || u!.sasaran || ''
-const judul = `${{ tambah: 'tambah', ubah: 'ubah', hapus: 'hapus' }[u!.aksi] ?? u!.aksi} ${u!.jenis === 'tempat' ? 'tempat' : 'tips'} "${nama}"`
+const nama = (u!.data && namaItem(u!.data)) || u!.sasaran || ''
+const judul = `${{ tambah: 'tambah', ubah: 'ubah', hapus: 'hapus' }[u!.aksi] ?? u!.aksi} ${LABEL_JENIS[u!.jenis].toLowerCase()} "${nama}"`
 try {
   const hasil = terapkanUsulan(konten, u!)
   if (cekSaja) selesai(true, `✅ Usulan ini aman (${judul}).\n\nMenunggu persetujuan. Pemilik repo: beri label **disetujui** untuk menerbitkannya.`, judul)

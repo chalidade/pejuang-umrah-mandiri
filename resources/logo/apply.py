@@ -32,7 +32,7 @@ round_legacy = svg(f'<circle cx="256" cy="256" r="256" fill="{BLUE}"/>' + mark(S
 # sumber vektor
 os.makedirs(f'{REPO}/resources/logo', exist_ok=True)
 files = {
-    'public/favicon.svg': rounded,
+    'public/favicon-v2.svg': rounded,
     'resources/logo/ikon.svg': rounded,
     'resources/logo/simbol.svg': svg(fajar(STYLE['putih'], 's1'), x1-x0+8, y1-y0+8, SYM_VB),
     'resources/logo/simbol-di-biru.svg': svg(fajar(STYLE['biru'], 's2'), x1-x0+8, y1-y0+8, SYM_VB),
@@ -43,10 +43,10 @@ for p, t in files.items():
     os.makedirs(os.path.dirname(f'{REPO}/{p}'), exist_ok=True); open(f'{REPO}/{p}', 'w').write(t)
 
 # web / PWA
-png(rounded, 192, f'{REPO}/public/icons/icon-192.png')
-png(rounded, 512, f'{REPO}/public/icons/icon-512.png')
-png(maskable, 512, f'{REPO}/public/icons/icon-512-maskable.png', rgb=True)
-png(square, 180, f'{REPO}/public/icons/apple-touch-icon.png', rgb=True)
+png(rounded, 192, f'{REPO}/public/icons/icon-192-v2.png')
+png(rounded, 512, f'{REPO}/public/icons/icon-512-v2.png')
+png(maskable, 512, f'{REPO}/public/icons/icon-512-maskable-v2.png', rgb=True)
+png(square, 180, f'{REPO}/public/icons/apple-touch-icon-v2.png', rgb=True)
 png(square, 1024, f'{REPO}/resources/icon-only.png', rgb=True)
 
 # iOS

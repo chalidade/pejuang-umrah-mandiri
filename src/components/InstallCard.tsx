@@ -36,7 +36,7 @@ export default function InstallCard({ always = false }: { always?: boolean }) {
   return (
     <section className="relative overflow-hidden rounded-[22px] border border-garis bg-white p-4 shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
       <div className="flex items-start gap-3">
-        <img src={`${import.meta.env.BASE_URL}icons/icon-192.png`} alt="" width={48} height={48} className="h-12 w-12 shrink-0 rounded-[14px]" />
+        <img src={`${import.meta.env.BASE_URL}icons/icon-192-v2.png`} alt="" width={48} height={48} className="h-12 w-12 shrink-0 rounded-[14px]" />
         <div className="min-w-0 flex-1">
           <h2 className="text-[1.02rem] font-bold">Pasang di HP</h2>
           <p className="mt-0.5 text-sm leading-snug text-redup">Buka langsung dari layar utama, tetap bisa dipakai tanpa internet di Tanah Suci.</p>

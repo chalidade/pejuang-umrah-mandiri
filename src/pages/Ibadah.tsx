@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { GUIDE, REVIEW_NOTE } from '../data/guide'
-import { TEMPAT, TIPS, REKOM_NOTE, type Kota, type Kategori } from '../data/rekomendasi'
+import { IBADAH, KATEGORI_IBADAH, TEMPAT, TIPS, REKOM_NOTE, REVIEW_NOTE } from '../data/konten'
+import { KATEGORI_LIST, KOTA_LIST, formatMenit, infoMedia, mapsUrl, type Kota } from '../lib/konten'
+import { useDipelajari } from '../lib/dipelajari'
 import { PageHeader, Tabs } from '../components/ui'
-import { mapsUrl } from '../lib/konten'
+import { Galeri, Pemutar, Thumb } from '../components/Media'
 
 type Tab = 'ibadah' | 'destinasi' | 'tips'
 const TAB_OPTIONS: { value: Tab; label: string }[] = [
@@ -19,7 +20,7 @@ export default function Panduan() {
   const tab: Tab = raw === 'destinasi' || raw === 'tips' ? raw : 'ibadah'
   return (
     <div>
-      <PageHeader title="Panduan" subtitle="Ibadah, tempat, dan tips. Tetap bisa dibaca tanpa internet." />
+      <PageHeader title="Panduan" subtitle="Ibadah, tempat, dan tips. Tulisannya tetap bisa dibaca tanpa internet." />
       <Tabs value={tab} onChange={(v) => setParams(v === 'ibadah' ? {} : { tab: v }, { replace: true })} options={TAB_OPTIONS} />
       {tab === 'ibadah' && <IbadahList />}
       {tab === 'destinasi' && <Destinasi />}
@@ -28,58 +29,90 @@ export default function Panduan() {
   )
 }
 
-function IbadahList() {
-  const steps = GUIDE.filter((g) => g.isStep)
-  const others = GUIDE.filter((g) => !g.isStep)
+function Centang() {
   return (
-    <div>
-      <div className="px-5">
-        <Link to="/ibadah/hitung" className="flex items-center gap-4 rounded-2xl bg-nabawi p-4 text-white">
-          <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden>
-            <circle cx="26" cy="26" r="21" fill="none" stroke="#FFB423" strokeWidth="5" strokeDasharray="15.6 3.25" transform="rotate(-90 26 26)" />
-          </svg>
-          <div>
-            <p className="font-bold">Penghitung tawaf & sa'i</p>
-            <p className="text-sm text-white/75">Ketuk layar setiap selesai satu putaran.</p>
-          </div>
-        </Link>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  )
+}
 
-        <p className="mt-4 rounded-xl border border-emas/40 bg-emas-muda px-3 py-2.5 text-sm">{REVIEW_NOTE}</p>
+function IbadahList() {
+  const { sudah } = useDipelajari()
+  const total = IBADAH.length
+  const selesai = IBADAH.filter((x) => sudah(x.id)).length
+  return (
+    <div className="px-5">
+      <Link to="/ibadah/hitung" className="flex items-center gap-4 rounded-2xl bg-nabawi p-4 text-white">
+        <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden>
+          <circle cx="26" cy="26" r="21" fill="none" stroke="#FFB423" strokeWidth="5" strokeDasharray="15.6 3.25" transform="rotate(-90 26 26)" />
+        </svg>
+        <div>
+          <p className="font-bold">Penghitung tawaf & sa'i</p>
+          <p className="text-sm text-white/75">Ketuk layar setiap selesai satu putaran.</p>
+        </div>
+      </Link>
 
-        <h2 className="mt-6 mb-3 text-lg font-bold tracking-tight">Urutan umroh</h2>
-        <ol className="relative space-y-2">
-          {steps.map((s, i) => (
-            <li key={s.id}>
-              <Link to={`/ibadah/${s.id}`} className="flex gap-4 rounded-2xl bg-white p-4 border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-nabawi-muda text-sm font-bold text-nabawi tabular-nums">{i + 1}</span>
-                <span>
-                  <span className="block font-semibold">{s.title}</span>
-                  <span className="block text-sm text-redup">{s.summary}</span>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ol>
-
-        <h2 className="mt-6 mb-3 text-lg font-bold tracking-tight">Dasar-dasar</h2>
-        <ul className="divide-y divide-batu rounded-2xl bg-white border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
-          {others.map((s) => (
-            <li key={s.id}>
-              <Link to={`/ibadah/${s.id}`} className="block px-4 py-3">
-                <span className="block font-semibold">{s.title}</span>
-                <span className="block text-sm text-redup">{s.summary}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+      <div className={`mt-4 p-4 ${card}`}>
+        <div className="flex items-baseline justify-between">
+          <p className="font-semibold">Progres belajar</p>
+          <p className="text-sm font-semibold text-nabawi tabular-nums">{selesai} dari {total} materi</p>
+        </div>
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-batu">
+          <div className="h-full rounded-full bg-nabawi transition-[width]" style={{ width: `${total ? (selesai / total) * 100 : 0}%` }} />
+        </div>
       </div>
+
+      <p className="mt-4 rounded-xl border border-emas/40 bg-emas-muda px-3 py-2.5 text-sm">{REVIEW_NOTE}</p>
+
+      {KATEGORI_IBADAH.map((kat) => {
+        const items = IBADAH.filter((x) => x.kategori === kat)
+        if (!items.length) return null
+        return (
+          <section key={kat}>
+            <h2 className="mt-6 mb-3 text-lg font-bold tracking-tight">{kat}</h2>
+            <ol className="space-y-2">
+              {items.map((s, i) => {
+                const ok = sudah(s.id)
+                const video = s.media.find((m) => infoMedia(m))
+                return (
+                  <li key={s.id}>
+                    <Link to={`/ibadah/${s.id}`} className={`flex items-center gap-3 p-3 ${card}`}>
+                      {video && <Thumb media={video} className="h-[68px] w-[110px]" />}
+                      <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-sm font-bold tabular-nums ${ok ? 'bg-nabawi text-white' : 'bg-nabawi-muda text-nabawi'}`} aria-label={ok ? 'Sudah dipelajari' : undefined}>
+                        {ok ? <Centang /> : i + 1}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-semibold leading-snug">{s.judul}</span>
+                        <span className="block text-sm text-redup">
+                          {video && infoMedia(video)!.mulai > 0 ? `Mulai dari menit ${formatMenit(infoMedia(video)!.mulai)}` : s.ringkas}
+                        </span>
+                      </span>
+                    </Link>
+                  </li>
+                )
+              })}
+            </ol>
+          </section>
+        )
+      })}
     </div>
   )
 }
 
-const KOTA: ('Semua' | Kota)[] = ['Semua', 'Makkah', 'Madinah']
-const KATEGORI: Kategori[] = ['Ziarah', 'Kuliner', 'Belanja']
-const DOT: Record<Kategori, string> = { Ziarah: 'bg-nabawi', Kuliner: 'bg-bata', Belanja: 'bg-emas' }
+const DOT: Record<string, string> = { Ziarah: 'bg-nabawi', Kuliner: 'bg-bata', Belanja: 'bg-emas' }
+
+function Baris({ to, judul, ringkas, media }: { to: string; judul: string; ringkas: string; media?: { url: string; mulai?: string } }) {
+  return (
+    <Link to={to} className="flex items-center gap-3 px-4 py-3">
+      <span className="min-w-0 flex-1">
+        <span className="block font-semibold">{judul}</span>
+        <span className="block text-sm text-redup">{ringkas}</span>
+      </span>
+      {media && <Thumb media={media} className="h-[68px] w-[68px]" time={false} />}
+    </Link>
+  )
+}
 
 function Destinasi() {
   const [kota, setKota] = useState<'Semua' | Kota>('Semua')
@@ -87,7 +120,7 @@ function Destinasi() {
   return (
     <div className="px-5">
       <div className="flex gap-2" role="group" aria-label="Pilih kota">
-        {KOTA.map((k) => (
+        {(['Semua', ...KOTA_LIST] as const).map((k) => (
           <button
             key={k}
             onClick={() => setKota(k)}
@@ -99,7 +132,7 @@ function Destinasi() {
         ))}
       </div>
       <p className="mt-4 rounded-xl border border-emas/40 bg-emas-muda px-3 py-2.5 text-sm">{REKOM_NOTE}</p>
-      {KATEGORI.map((kat) => {
+      {KATEGORI_LIST.map((kat) => {
         const items = list.filter((t) => t.kategori === kat)
         if (!items.length) return null
         return (
@@ -111,13 +144,7 @@ function Destinasi() {
             <ul className={`divide-y divide-batu ${card}`}>
               {items.map((t) => (
                 <li key={t.id}>
-                  <Link to={`/ibadah/tempat/${t.id}`} className="flex items-start gap-3 px-4 py-3">
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-semibold">{t.nama}</span>
-                      <span className="block text-sm text-redup">{t.ringkas}</span>
-                    </span>
-                    {kota === 'Semua' && <span className="mt-0.5 shrink-0 rounded-full bg-batu px-2.5 py-1 text-xs font-semibold text-redup">{t.kota}</span>}
-                  </Link>
+                  <Baris to={`/ibadah/tempat/${t.id}`} judul={t.nama} ringkas={t.ringkas} media={t.media.find((m) => infoMedia(m))} />
                 </li>
               ))}
             </ul>
@@ -132,16 +159,13 @@ function TipsList() {
   return (
     <div className="px-5">
       <p className="rounded-xl border border-emas/40 bg-emas-muda px-3 py-2.5 text-sm">{REKOM_NOTE}</p>
-      <ol className="mt-4 space-y-2">
+      <ul className={`mt-4 divide-y divide-batu ${card}`}>
         {TIPS.map((t) => (
           <li key={t.id}>
-            <Link to={`/ibadah/tips/${t.id}`} className={`block p-4 ${card}`}>
-              <span className="block font-semibold">{t.title}</span>
-              <span className="block text-sm text-redup">{t.summary}</span>
-            </Link>
+            <Baris to={`/ibadah/tips/${t.id}`} judul={t.judul} ringkas={t.ringkas} media={t.media.find((m) => infoMedia(m))} />
           </li>
         ))}
-      </ol>
+      </ul>
     </div>
   )
 }
@@ -159,6 +183,23 @@ function Points({ items }: { items: string[] }) {
   )
 }
 
+const Paragraf = ({ items }: { items: string[] }) => (
+  <>
+    {items.map((p) => (
+      <p key={p} className="max-w-[65ch] text-[1.02rem] leading-relaxed">{p}</p>
+    ))}
+  </>
+)
+
+function Berikutnya({ to, judul }: { to: string; judul: string }) {
+  return (
+    <Link to={to} className="block rounded-2xl bg-nabawi-muda p-4">
+      <span className="block text-sm text-redup">Berikutnya</span>
+      <span className="block font-semibold text-nabawi">{judul}</span>
+    </Link>
+  )
+}
+
 export function TempatDetail() {
   const { id } = useParams()
   const t = TEMPAT.find((x) => x.id === id)
@@ -167,9 +208,8 @@ export function TempatDetail() {
     <article>
       <PageHeader title={t.nama} subtitle={`${t.kategori} · ${t.kota}`} back="/ibadah?tab=destinasi" />
       <div className="space-y-4 px-5">
-        {t.paragraphs.map((p) => (
-          <p key={p} className="max-w-[65ch] text-[1.02rem] leading-relaxed">{p}</p>
-        ))}
+        <Galeri media={t.media} />
+        <Paragraf items={t.isi} />
         <a href={mapsUrl(t)} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 rounded-xl border border-garis bg-white py-3 font-semibold text-nabawi">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" />
@@ -177,7 +217,7 @@ export function TempatDetail() {
           </svg>
           Buka di Google Maps
         </a>
-        {t.tips && (
+        {t.tips.length > 0 && (
           <>
             <h2 className="pt-2 text-lg font-bold tracking-tight">Tips</h2>
             <Points items={t.tips} />
@@ -197,19 +237,13 @@ export function TipDetail() {
   const next = TIPS[idx + 1]
   return (
     <article>
-      <PageHeader title={t.title} subtitle={t.summary} back="/ibadah?tab=tips" />
+      <PageHeader title={t.judul} subtitle={t.ringkas} back="/ibadah?tab=tips" />
       <div className="space-y-4 px-5">
-        {t.paragraphs.map((p) => (
-          <p key={p} className="max-w-[65ch] text-[1.02rem] leading-relaxed">{p}</p>
-        ))}
-        {t.points && <Points items={t.points} />}
+        <Galeri media={t.media} />
+        <Paragraf items={t.isi} />
+        {t.poin.length > 0 && <Points items={t.poin} />}
         <p className="text-xs text-redup">{REKOM_NOTE}</p>
-        {next && (
-          <Link to={`/ibadah/tips/${next.id}`} className="block rounded-2xl bg-nabawi-muda p-4">
-            <span className="block text-sm text-redup">Berikutnya</span>
-            <span className="block font-semibold text-nabawi">{next.title}</span>
-          </Link>
-        )}
+        {next && <Berikutnya to={`/ibadah/tips/${next.id}`} judul={next.judul} />}
       </div>
     </article>
   )
@@ -217,49 +251,56 @@ export function TipDetail() {
 
 export function IbadahDetail() {
   const { id } = useParams()
-  const idx = GUIDE.findIndex((g) => g.id === id)
-  const s = GUIDE[idx]
-  if (!s) return <PageHeader title="Panduan tidak ditemukan" back="/ibadah" />
-  const next = GUIDE.slice(idx + 1).find((g) => g.isStep === s.isStep)
+  const { sudah, toggle } = useDipelajari()
+  const s = IBADAH.find((g) => g.id === id)
+  if (!s) return <PageHeader title="Materi tidak ditemukan" back="/ibadah" />
+  const sekategori = IBADAH.filter((g) => g.kategori === s.kategori)
+  const nomor = sekategori.indexOf(s) + 1
+  const next = sekategori[nomor] ?? IBADAH[IBADAH.indexOf(s) + 1]
+  const [utama, ...lain] = s.media.filter((m) => infoMedia(m))
+  const info = utama ? infoMedia(utama) : null
+  const ok = sudah(s.id)
 
   return (
     <article>
-      <PageHeader title={s.title} subtitle={s.summary} back="/ibadah" />
+      <PageHeader title={s.judul} subtitle={s.ringkas} back="/ibadah" />
       <div className="space-y-4 px-5">
-        {s.paragraphs.map((p) => (
-          <p key={p} className="max-w-[65ch] text-[1.02rem] leading-relaxed">
-            {p}
-          </p>
-        ))}
-        {s.points && (
-          <ul className="space-y-2 rounded-2xl bg-white p-4 border border-garis shadow-[0_6px_18px_rgba(24,87,240,0.07)]">
-            {s.points.map((p) => (
-              <li key={p} className="flex gap-3 text-[0.97rem]">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emas" aria-hidden />
-                {p}
-              </li>
-            ))}
-          </ul>
-        )}
-        {s.doa?.map((d) => (
-          <figure key={d.arab} className="rounded-2xl border border-garis bg-white p-5">
-            <p className="arab text-right text-[1.6rem] text-tinta" lang="ar">
-              {d.arab}
-            </p>
-            <p className="mt-3 text-[0.95rem] font-medium italic">{d.latin}</p>
+        {utama && <Pemutar media={utama} />}
+        <div className="flex flex-wrap gap-2 text-sm font-semibold">
+          <span className="rounded-full bg-nabawi-muda px-3 py-1 text-nabawi">{s.kategori} · {nomor}</span>
+          {info && info.mulai > 0 && <span className="rounded-full bg-batu px-3 py-1 tabular-nums text-redup">Mulai {formatMenit(info.mulai)}</span>}
+        </div>
+        <Paragraf items={s.isi} />
+        {s.poin.length > 0 && <Points items={s.poin} />}
+        {s.doa.map((d) => (
+          <figure key={d.arab + d.latin} className="rounded-2xl border border-garis bg-white p-5">
+            {d.arab && <p className="arab text-right text-[1.6rem] text-tinta" lang="ar">{d.arab}</p>}
+            {d.latin && <p className="mt-3 text-[0.95rem] font-medium italic">{d.latin}</p>}
             <figcaption className="mt-2 text-sm leading-relaxed text-redup">
               {d.arti}
               {d.sumber && <span className="mt-1 block font-semibold text-nabawi">{d.sumber}</span>}
             </figcaption>
           </figure>
         ))}
-        <p className="text-xs text-redup">{REVIEW_NOTE}</p>
-        {next && (
-          <Link to={`/ibadah/${next.id}`} className="block rounded-2xl bg-nabawi-muda p-4">
-            <span className="block text-sm text-redup">Berikutnya</span>
-            <span className="block font-semibold text-nabawi">{next.title}</span>
-          </Link>
+        {lain.length > 0 && (
+          <>
+            <h2 className="pt-2 text-lg font-bold tracking-tight">Video dan foto lain</h2>
+            <Galeri media={lain} />
+          </>
         )}
+        {utama && (
+          <p className="rounded-xl bg-batu px-3 py-2.5 text-sm text-redup">Video membantu, tapi baca juga penjelasannya supaya pemahamanmu lebih matang.</p>
+        )}
+        <button
+          onClick={() => toggle(s.id)}
+          aria-pressed={ok}
+          className={`flex w-full items-center justify-center gap-2 rounded-xl border py-3 font-semibold ${ok ? 'border-nabawi bg-nabawi text-white' : 'border-garis bg-white text-nabawi'}`}
+        >
+          <Centang />
+          {ok ? 'Sudah dipelajari' : 'Tandai sudah dipelajari'}
+        </button>
+        <p className="text-xs text-redup">{REVIEW_NOTE}</p>
+        {next && <Berikutnya to={`/ibadah/${next.id}`} judul={next.judul} />}
       </div>
     </article>
   )

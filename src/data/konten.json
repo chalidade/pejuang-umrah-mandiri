@@ -1,4 +1,176 @@
 {
+  "kategoriIbadah": [
+    "Urutan umrah",
+    "Dasar-dasar",
+    "Fiqh umrah"
+  ],
+  "ibadah": [
+    {
+      "judul": "Apa itu umroh",
+      "kategori": "Dasar-dasar",
+      "ringkas": "Ziarah ke Baitullah dengan rangkaian ibadah tertentu.",
+      "isi": [
+        "Umroh adalah ibadah mengunjungi Ka'bah di Masjidil Haram dengan berihram dari miqat, tawaf, sa'i antara Shafa dan Marwah, lalu tahallul. Berbeda dengan haji, umroh bisa dilakukan kapan saja sepanjang tahun.",
+        "Rangkaian umroh bisa selesai dalam beberapa jam. Waktu sisanya biasanya dipakai untuk memperbanyak ibadah di Masjidil Haram dan Masjid Nabawi."
+      ],
+      "poin": [],
+      "doa": [],
+      "media": []
+    },
+    {
+      "judul": "Rukun dan wajib umroh",
+      "kategori": "Dasar-dasar",
+      "ringkas": "Yang tidak boleh ditinggalkan, dan yang perlu diganti dam bila terlewat.",
+      "isi": [
+        "Ulama berbeda pendapat tentang pembagian rukun dan wajib umroh. Tanyakan pegangan yang kamu ikuti kepada pembimbingmu."
+      ],
+      "poin": [
+        "Rukun: ihram (niat), tawaf, dan sa'i. Sebagian ulama memasukkan tahallul sebagai rukun.",
+        "Wajib: berihram dari miqat dan mencukur atau memendekkan rambut.",
+        "Rukun yang tertinggal membuat umroh tidak sah sampai dikerjakan. Wajib yang tertinggal diganti dengan dam."
+      ],
+      "doa": [],
+      "media": []
+    },
+    {
+      "judul": "Miqat",
+      "kategori": "Urutan umrah",
+      "ringkas": "Batas tempat mulai berihram. Jangan sampai terlewat.",
+      "isi": [
+        "Miqat adalah batas tempat jemaah wajib berniat ihram sebelum masuk wilayah Makkah. Jemaah dari Indonesia yang terbang langsung ke Jeddah melewati miqat di udara, sehingga biasanya berihram di pesawat sebelum pesawat melintasinya.",
+        "Jemaah yang ke Madinah lebih dulu berihram dari Dzulhulaifah (Bir Ali) saat berangkat dari Madinah menuju Makkah."
+      ],
+      "poin": [
+        "Siapkan pakaian ihram di kabin, bukan di bagasi.",
+        "Tanyakan ke awak kabin kapan pesawat mendekati miqat.",
+        "Mandi sunnah dan memakai wewangian di badan (bukan di kain ihram) dilakukan sebelum berniat."
+      ],
+      "doa": [],
+      "media": []
+    },
+    {
+      "judul": "Niat ihram dan talbiyah",
+      "kategori": "Urutan umrah",
+      "ringkas": "Mulai masuk keadaan ihram, lalu perbanyak talbiyah.",
+      "isi": [
+        "Pria memakai dua helai kain tanpa jahitan yang membentuk pakaian. Wanita memakai pakaian syar'i yang menutup aurat, tanpa cadar dan sarung tangan.",
+        "Setelah berniat, ucapkan talbiyah sesering mungkin sampai tiba di Masjidil Haram dan memulai tawaf. Pria mengeraskan suara, wanita cukup terdengar diri sendiri."
+      ],
+      "poin": [],
+      "doa": [
+        {
+          "arab": "لَبَّيْكَ اللَّهُمَّ عُمْرَةً",
+          "latin": "Labbaika Allāhumma 'umratan",
+          "arti": "Aku penuhi panggilan-Mu ya Allah untuk berumroh.",
+          "sumber": ""
+        },
+        {
+          "arab": "لَبَّيْكَ اللَّهُمَّ لَبَّيْكَ، لَبَّيْكَ لَا شَرِيكَ لَكَ لَبَّيْكَ، إِنَّ الْحَمْدَ وَالنِّعْمَةَ لَكَ وَالْمُلْكَ، لَا شَرِيكَ لَكَ",
+          "latin": "Labbaika Allāhumma labbaik, labbaika lā syarīka laka labbaik, innal ḥamda wan-ni'mata laka wal-mulk, lā syarīka lak",
+          "arti": "Aku penuhi panggilan-Mu ya Allah. Tiada sekutu bagi-Mu. Sesungguhnya segala puji, nikmat, dan kerajaan milik-Mu. Tiada sekutu bagi-Mu.",
+          "sumber": "HR. Bukhari dan Muslim"
+        }
+      ],
+      "media": []
+    },
+    {
+      "judul": "Larangan saat ihram",
+      "kategori": "Fiqh umrah",
+      "ringkas": "Hal yang tidak boleh dilakukan sampai tahallul.",
+      "isi": [
+        "Larangan ini berlaku sejak berniat ihram sampai selesai tahallul."
+      ],
+      "poin": [
+        "Memakai wewangian setelah berniat.",
+        "Memotong rambut dan kuku.",
+        "Pria: memakai pakaian berjahit yang membentuk tubuh dan menutup kepala.",
+        "Wanita: memakai cadar dan sarung tangan.",
+        "Berburu binatang darat.",
+        "Akad nikah dan berhubungan suami istri.",
+        "Bertengkar dan berkata kotor."
+      ],
+      "doa": [],
+      "media": []
+    },
+    {
+      "judul": "Tawaf",
+      "kategori": "Urutan umrah",
+      "ringkas": "Mengelilingi Ka'bah tujuh kali, mulai dan berakhir di Hajar Aswad.",
+      "isi": [
+        "Tawaf dimulai dari garis sejajar Hajar Aswad, dengan Ka'bah berada di sebelah kiri. Satu putaran dihitung dari Hajar Aswad kembali ke Hajar Aswad. Dalam keadaan suci dari hadats.",
+        "Pria disunnahkan idhthiba' (membuka bahu kanan) selama tawaf umroh dan berjalan cepat (raml) di tiga putaran pertama bila memungkinkan.",
+        "Tidak ada doa khusus untuk tiap putaran. Perbanyak doa dan dzikir dengan bahasa yang kamu pahami."
+      ],
+      "poin": [
+        "Gunakan penghitung tawaf di aplikasi ini agar tidak lupa hitungan.",
+        "Kalau ragu jumlah putaran, ambil hitungan yang lebih sedikit."
+      ],
+      "doa": [
+        {
+          "arab": "بِسْمِ اللَّهِ وَاللَّهُ أَكْبَرُ",
+          "latin": "Bismillāhi wallāhu akbar",
+          "arti": "Dengan nama Allah, Allah Mahabesar. (Saat memulai tiap putaran di Hajar Aswad.)",
+          "sumber": ""
+        },
+        {
+          "arab": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",
+          "latin": "Rabbanā ātinā fid-dunyā ḥasanah, wa fil-ākhirati ḥasanah, wa qinā 'adzāban-nār",
+          "arti": "Ya Tuhan kami, berilah kami kebaikan di dunia dan kebaikan di akhirat, dan lindungilah kami dari azab neraka. (Antara Rukun Yamani dan Hajar Aswad.)",
+          "sumber": "QS. Al-Baqarah: 201"
+        }
+      ],
+      "media": []
+    },
+    {
+      "judul": "Shalat di belakang Maqam Ibrahim dan minum zamzam",
+      "kategori": "Urutan umrah",
+      "ringkas": "Dua rakaat setelah tawaf, lalu minum air zamzam.",
+      "isi": [
+        "Setelah tawaf, tutup kembali bahu kanan, lalu shalat dua rakaat di belakang Maqam Ibrahim. Kalau padat, boleh di bagian mana saja dari masjid.",
+        "Setelah shalat, minum air zamzam dan berdoa."
+      ],
+      "poin": [],
+      "doa": [],
+      "media": []
+    },
+    {
+      "judul": "Sa'i",
+      "kategori": "Urutan umrah",
+      "ringkas": "Berjalan tujuh kali antara Shafa dan Marwah, mulai dari Shafa.",
+      "isi": [
+        "Sa'i dimulai di bukit Shafa dan berakhir di Marwah. Shafa ke Marwah dihitung satu kali, Marwah ke Shafa dihitung satu kali lagi, sehingga putaran ketujuh berakhir di Marwah.",
+        "Di antara dua lampu hijau, pria disunnahkan berlari kecil. Sa'i tidak disyaratkan suci dari hadats, tapi lebih utama dalam keadaan suci."
+      ],
+      "poin": [],
+      "doa": [
+        {
+          "arab": "إِنَّ الصَّفَا وَالْمَرْوَةَ مِنْ شَعَائِرِ اللَّهِ",
+          "latin": "Innaṣ-ṣafā wal-marwata min sya'ā'irillāh",
+          "arti": "Sesungguhnya Shafa dan Marwah adalah sebagian syiar Allah. (Dibaca saat mendekati Shafa di awal sa'i.)",
+          "sumber": "QS. Al-Baqarah: 158"
+        },
+        {
+          "arab": "أَبْدَأُ بِمَا بَدَأَ اللَّهُ بِهِ",
+          "latin": "Abda'u bimā bada'allāhu bih",
+          "arti": "Aku memulai dengan apa yang Allah mulai.",
+          "sumber": ""
+        }
+      ],
+      "media": []
+    },
+    {
+      "judul": "Tahallul",
+      "kategori": "Urutan umrah",
+      "ringkas": "Mencukur atau memendekkan rambut. Umroh selesai.",
+      "isi": [
+        "Pria mencukur habis (lebih utama) atau memendekkan rambut dari seluruh bagian kepala. Wanita memotong ujung rambut sekitar satu ruas jari.",
+        "Setelah tahallul, semua larangan ihram gugur dan rangkaian umroh selesai."
+      ],
+      "poin": [],
+      "doa": [],
+      "media": []
+    }
+  ],
   "tempat": [
     {
       "nama": "Jabal Nur dan Gua Hira",
@@ -14,7 +186,8 @@
         "Bawa air minum dan pakai alas kaki yang tidak licin.",
         "Ziarah ke sini bukan bagian dari ibadah umroh."
       ],
-      "maps": ""
+      "maps": "",
+      "media": []
     },
     {
       "nama": "Jabal Tsur",
@@ -29,7 +202,8 @@
         "Cocok untuk yang benar-benar fit.",
         "Pergi berombongan, jangan sendirian."
       ],
-      "maps": ""
+      "maps": "",
+      "media": []
     },
     {
       "nama": "Arafah, Muzdalifah, dan Mina",
@@ -44,7 +218,8 @@
         "Sewa taksi bersama rombongan supaya lebih hemat.",
         "Sepakati rute dan harga sebelum berangkat."
       ],
-      "maps": ""
+      "maps": "",
+      "media": []
     },
     {
       "nama": "Masjid Quba",
@@ -59,7 +234,8 @@
         "Berwudhu dari hotel, lalu shalat dua rakaat di sana.",
         "Hari Sabtu pagi biasanya ramai jamaah."
       ],
-      "maps": ""
+      "maps": "",
+      "media": []
     },
     {
       "nama": "Jabal Uhud dan makam syuhada",
@@ -73,7 +249,8 @@
       "tips": [
         "Baca kisah Perang Uhud sebelum datang, supaya lebih terasa."
       ],
-      "maps": ""
+      "maps": "",
+      "media": []
     },
     {
       "nama": "Pemakaman Baqi",
@@ -87,7 +264,8 @@
       "tips": [
         "Ziarah kubur dengan doa yang diajarkan, tanpa meminta kepada yang dimakamkan."
       ],
-      "maps": ""
+      "maps": "",
+      "media": []
     },
     {
       "nama": "Pasar kurma Madinah",
@@ -102,7 +280,8 @@
         "Minta dicoba dulu, penjual biasanya mempersilakan.",
         "Cek batas bagasi maskapai sebelum memborong."
       ],
-      "maps": ""
+      "maps": "",
+      "media": []
     },
     {
       "nama": "Toko sekitar Masjid Nabawi",
@@ -116,7 +295,8 @@
         "Bandingkan harga di dua atau tiga toko.",
         "Belanja di luar waktu shalat, toko tutup saat azan."
       ],
-      "maps": ""
+      "maps": "",
+      "media": []
     },
     {
       "nama": "Al Baik",
@@ -130,7 +310,8 @@
         "Datang di luar jam setelah shalat supaya antrean lebih pendek.",
         "Sausnya khas, coba yang bawang putih."
       ],
-      "maps": ""
+      "maps": "",
+      "media": []
     },
     {
       "nama": "Nasi kabsah dan mandi",
@@ -143,7 +324,8 @@
       "tips": [
         "Satu porsi besar cukup untuk dua sampai tiga orang."
       ],
-      "maps": ""
+      "maps": "",
+      "media": []
     },
     {
       "nama": "Rumah makan Indonesia",
@@ -156,7 +338,8 @@
       "tips": [
         "Tanya resepsionis hotel atau sesama jamaah, mereka biasanya tahu yang terdekat."
       ],
-      "maps": ""
+      "maps": "",
+      "media": []
     }
   ],
   "tips": [
@@ -170,7 +353,8 @@
         "Daftar akun Nusuk sejak di Indonesia.",
         "Pesan slot begitu kamu tahu tanggal di Madinah, dan cek ulang beberapa hari sebelumnya.",
         "Datang lebih awal dari jam di izin, antrean masuk cukup panjang."
-      ]
+      ],
+      "media": []
     },
     {
       "judul": "Makkah–Madinah naik kereta cepat",
@@ -182,7 +366,8 @@
         "Pesan tiket online lebih awal, terutama menjelang akhir pekan.",
         "Stasiun tidak berada di samping masjid, siapkan taksi ke dan dari stasiun.",
         "Kalau sedang ihram, perhatikan barang bawaan dan waktu miqat."
-      ]
+      ],
+      "media": []
     },
     {
       "judul": "Sandal aman, pintu dicatat",
@@ -194,7 +379,8 @@
         "Bawa kantong sandal dan simpan di tas.",
         "Foto atau catat nomor pintu tempat kamu masuk.",
         "Sepakati titik kumpul dengan rombongan, misalnya nomor pintu tertentu."
-      ]
+      ],
+      "media": []
     },
     {
       "judul": "Internet dari hari pertama",
@@ -206,7 +392,8 @@
         "eSIM bisa dibeli dan dipasang dari Indonesia, cek dulu HP-mu mendukung eSIM.",
         "Kartu SIM lokal bisa dibeli di bandara, siapkan paspor untuk pendaftaran.",
         "Unduh peta Makkah dan Madinah untuk dipakai offline."
-      ]
+      ],
+      "media": []
     },
     {
       "judul": "Naik taksi tanpa drama",
@@ -217,7 +404,8 @@
       "poin": [
         "Sebutkan tujuan dan sepakati harga sebelum masuk taksi biasa.",
         "Setelah shalat Jumat atau shalat besar, jalan sekitar masjid macet. Jalan kaki sedikit menjauh dulu."
-      ]
+      ],
+      "media": []
     },
     {
       "judul": "Hemat makan dan minum",
@@ -229,7 +417,8 @@
         "Isi botol minum dari keran zamzam.",
         "Beli roti, buah, dan susu di supermarket untuk sarapan.",
         "Makan besar sekali sehari di restoran, sisanya ringan."
-      ]
+      ],
+      "media": []
     },
     {
       "judul": "Uang tunai secukupnya",
@@ -241,7 +430,8 @@
         "Tukar riyal secukupnya sebelum berangkat.",
         "Aktifkan transaksi luar negeri di kartu debit atau kreditmu.",
         "Simpan uang di dua tempat terpisah."
-      ]
+      ],
+      "media": []
     }
   ]
 }

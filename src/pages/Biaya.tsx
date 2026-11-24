@@ -8,6 +8,7 @@ import Sheet from '../components/Sheet'
 import { jutaan, parseAngka, riyal, rupiah, tanggal, today } from '../lib/format'
 import { toIdr, useTrip } from '../lib/hooks'
 import { Button, Field, PageHeader, Progress, Tabs, inputClass } from '../components/ui'
+import { IKON, IkonKategori, KUNCI_IKON, kunciIkon, warnaIkon } from '../components/IkonKategori'
 
 type Tab = 'kalkulator' | 'pengeluaran' | 'tabungan'
 
@@ -309,13 +310,17 @@ function Pengeluaran() {
   const shown = filter === 'semua' ? expenses : expenses.filter((e) => e.phase === filter)
   const shownTotal = shown.reduce((a, e) => a + idr(e), 0)
 
-  const byCat = Object.entries(
-    shown.reduce<Record<string, number>>((acc, e) => {
-      const k = catName(e.categoryUid)
-      acc[k] = (acc[k] ?? 0) + idr(e)
+  const catOf = (uid?: string) => categories.find((c) => c.uid === uid)
+  const byCat = Object.values(
+    shown.reduce<Record<string, { key: string; name: string; ikon: string; sum: number; n: number }>>((acc, e) => {
+      const c = catOf(e.categoryUid)
+      const key = c?.uid ?? 'none'
+      acc[key] ??= { key, name: c?.name ?? 'Tanpa kategori', ikon: kunciIkon(c), sum: 0, n: 0 }
+      acc[key].sum += idr(e); acc[key].n += 1
       return acc
     }, {}),
-  ).sort((a, b) => b[1] - a[1])
+  ).sort((a, b) => b.sum - a.sum)
+  const persen = (v: number) => (shownTotal ? Math.round((v / shownTotal) * 100) : 0)
 
   const edit = (e: (typeof expenses)[number]) =>
     setDraft({ id: e.id, title: e.title, amount: String(e.amount).replace('.', ','), currency: e.currency, phase: e.phase!, categoryUid: e.categoryUid ?? '', date: e.date })
@@ -346,22 +351,36 @@ function Pengeluaran() {
           })}
         </div>
         {filter !== 'semua' && <p className="mt-3 text-xs text-redup">{PHASES.find((p) => p.value === filter)?.hint}. Ketuk lagi untuk melihat semua.</p>}
-        {byCat.length > 0 && (
-          <ul className="mt-4 space-y-2">
-            {byCat.map(([name, sum]) => (
-              <li key={name}>
-                <div className="flex justify-between text-sm">
-                  <span>{name}</span>
-                  <span className="tabular-nums">{rupiah(sum)}</span>
-                </div>
-                <div className="mt-1">
-                  <Progress value={shownTotal ? sum / shownTotal : 0} />
-                </div>
+      </div>
+
+      {byCat.length > 0 && (
+        <section className="mt-4 rounded-[22px] border border-garis bg-white p-4 shadow-[0_6px_18px_rgba(24,87,240,0.07)]" aria-label="Ringkasan per kategori">
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-bold">Per kategori</h2>
+            <p className="text-sm text-redup tabular-nums">{filter === 'semua' ? 'Semua' : PHASES.find((p) => p.value === filter)?.label} · {rupiah(shownTotal)}</p>
+          </div>
+          <div className="mt-3 flex h-2.5 gap-[3px] overflow-hidden rounded-full" aria-hidden>
+            {byCat.map((c) => (
+              <span key={c.key} className="h-full first:rounded-l-full last:rounded-r-full" style={{ width: `${(c.sum / (shownTotal || 1)) * 100}%`, background: warnaIkon(c.ikon), minWidth: 3 }} />
+            ))}
+          </div>
+          <ul className="mt-2 divide-y divide-batu">
+            {byCat.map((c) => (
+              <li key={c.key} className="flex items-center gap-3 py-2.5">
+                <IkonKategori kunci={c.ikon} size={40} />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold leading-snug">{c.name}</span>
+                  <span className="block text-xs text-redup">{c.n} catatan</span>
+                </span>
+                <span className="flex shrink-0 flex-col items-end gap-1">
+                  <span className="font-semibold tabular-nums">{rupiah(c.sum)}</span>
+                  <span className="rounded-full px-2 py-0.5 text-xs font-bold tabular-nums" style={{ background: IKON[c.ikon].bg, color: IKON[c.ikon].fg }}>{persen(c.sum)}%</span>
+                </span>
               </li>
             ))}
           </ul>
-        )}
-      </div>
+        </section>
+      )}
 
       <div className="mt-4 flex gap-2">
         <Button className="flex-1" onClick={() => setDraft(emptyDraft(filter === 'semua' ? 'pra' : filter))}>
@@ -381,6 +400,7 @@ function Pengeluaran() {
           {shown.map((e) => (
             <li key={e.uid}>
               <button onClick={() => edit(e)} className="flex w-full items-center gap-3 px-4 py-3 text-left">
+                <IkonKategori kunci={kunciIkon(catOf(e.categoryUid))} size={38} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{e.title}</p>
                   <p className="truncate text-xs text-redup">
@@ -450,21 +470,23 @@ function ExpenseSheet({ draft, categories, onClose, onManage }: { draft: Draft; 
             </select>
           </div>
         </Field>
-        <div className="grid grid-cols-[1fr_auto] items-end gap-2">
-          <Field label="Kategori">
-            <select className={inputClass} value={d.categoryUid} onChange={(e) => set({ categoryUid: e.target.value })}>
-              {categories.map((c) => (
-                <option key={c.uid} value={c.uid}>
+        <Field label="Kategori">
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Pilih kategori">
+            {categories.map((c) => {
+              const on = d.categoryUid === c.uid
+              return (
+                <button key={c.uid} type="button" onClick={() => set({ categoryUid: c.uid })} aria-pressed={on}
+                  className={`flex items-center gap-2 rounded-full border py-1 pr-3.5 pl-1 text-sm font-semibold ${on ? 'border-nabawi bg-nabawi text-white' : 'border-garis bg-white'}`}>
+                  <IkonKategori kunci={kunciIkon(c)} size={28} />
                   {c.name}
-                </option>
-              ))}
-              {!categories.some((c) => c.uid === d.categoryUid) && <option value={d.categoryUid}>Tanpa kategori</option>}
-            </select>
-          </Field>
-          <button type="button" onClick={onManage} className="h-[50px] rounded-xl border border-garis px-3 text-sm font-semibold text-nabawi">
-            Kelola
-          </button>
-        </div>
+                </button>
+              )
+            })}
+            <button type="button" onClick={onManage} className="rounded-full border border-dashed border-garis px-3.5 py-2 text-sm font-semibold text-nabawi">
+              Kelola kategori
+            </button>
+          </div>
+        </Field>
         <Field label="Tanggal">
           <input type="date" className={inputClass} value={d.date} onChange={(e) => set({ date: e.target.value })} />
         </Field>
@@ -500,6 +522,7 @@ function ExpenseSheet({ draft, categories, onClose, onManage }: { draft: Draft; 
 
 function CategorySheet({ categories, usage, onClose }: { categories: Category[]; usage: (uid: string) => number; onClose: () => void }) {
   const [name, setName] = useState('')
+  const [pilih, setPilih] = useState<string | null>(null)
   const rename = (c: Category, v: string) => db.categories.update(c.id!, { name: v, updatedAt: Date.now() })
   const add = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -511,10 +534,13 @@ function CategorySheet({ categories, usage, onClose }: { categories: Category[];
 
   return (
     <Sheet title="Kategori" onClose={onClose}>
-      <p className="mb-3 text-sm text-redup">Ketuk nama untuk mengganti. Catatan dari kategori yang dihapus menjadi "Tanpa kategori".</p>
+      <p className="mb-3 text-sm text-redup">Ketuk ikon untuk mengganti ikon, ketuk nama untuk mengganti nama. Catatan dari kategori yang dihapus menjadi "Tanpa kategori".</p>
       <ul className="divide-y divide-garis rounded-2xl border border-garis">
         {categories.map((c) => (
-          <li key={c.uid} className="flex items-center gap-2 py-1.5 pr-2 pl-3">
+          <li key={c.uid} className="flex flex-wrap items-center gap-2 py-1.5 pr-2 pl-2">
+            <button type="button" onClick={() => setPilih(pilih === c.uid ? null : c.uid)} aria-expanded={pilih === c.uid} aria-label={`Ganti ikon ${c.name}`} className="rounded-full">
+              <IkonKategori kunci={kunciIkon(c)} size={36} />
+            </button>
             <input
               className="min-w-0 flex-1 rounded-lg bg-transparent px-1 py-2 font-semibold outline-none focus:bg-nabawi-muda"
               value={c.name}
@@ -524,6 +550,19 @@ function CategorySheet({ categories, usage, onClose }: { categories: Category[];
             />
             <span className="shrink-0 text-xs text-redup tabular-nums">{usage(c.uid)} catatan</span>
             <RemoveButton label={c.name} onClick={() => softDelete('categories', c.id!)} />
+            {pilih === c.uid && (
+              <div className="basis-full pb-2" role="group" aria-label={`Pilih ikon untuk ${c.name}`}>
+                <div className="grid grid-cols-8 gap-1.5 pt-1">
+                  {KUNCI_IKON.map((k) => (
+                    <button key={k} type="button" title={IKON[k].label} aria-label={IKON[k].label} aria-pressed={kunciIkon(c) === k}
+                      onClick={() => { db.categories.update(c.id!, { icon: k, updatedAt: Date.now() }); setPilih(null) }}
+                      className={`grid place-items-center rounded-full p-0.5 ${kunciIkon(c) === k ? 'ring-2 ring-nabawi' : ''}`}>
+                      <IkonKategori kunci={k} size={32} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </li>
         ))}
       </ul>
