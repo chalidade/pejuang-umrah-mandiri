@@ -332,7 +332,7 @@ function Pengeluaran() {
         <p className="text-sm text-redup">Total pengeluaran</p>
         <p className="font-display mt-1 text-[2rem] leading-none font-extrabold tabular-nums"><Uang n={total} /></p>
         <p className="mt-1.5 text-xs text-redup tabular-nums">Kurs 1 SAR = {rupiah(trip.sarRate)}</p>
-        <div className="mt-4 grid grid-cols-3 gap-2">
+        <div className="mt-4 space-y-2">
           {PHASES.map((ph) => {
             const list = expenses.filter((e) => e.phase === ph.value)
             const sum = list.reduce((a, e) => a + idr(e), 0)
@@ -342,11 +342,13 @@ function Pengeluaran() {
                 key={ph.value}
                 onClick={() => setFilter(active ? 'semua' : ph.value)}
                 aria-pressed={active}
-                className={`min-w-0 rounded-2xl px-2.5 py-2.5 text-left transition-colors ${active ? 'bg-nabawi text-white' : 'bg-nabawi-muda'}`}
+                className={`flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-2xl px-4 py-3 text-left transition-colors ${active ? 'bg-nabawi text-white' : 'bg-nabawi-muda'}`}
               >
-                <span className={`block text-[0.72rem] font-bold ${active ? 'text-white/85' : 'text-redup'}`}>{ph.label}</span>
-                <span className="font-display mt-1 block text-[1.05rem] leading-tight font-extrabold tabular-nums" title={rupiah(sum)}><Uang n={sum} singkat /></span>
-                <span className={`mt-0.5 block text-[0.7rem] ${active ? 'text-white/80' : 'text-redup'}`}>{list.length} catatan</span>
+                <span className="min-w-0">
+                  <span className="block font-bold">{ph.label}</span>
+                  <span className={`block text-xs ${active ? 'text-white/80' : 'text-redup'}`}>{list.length} catatan</span>
+                </span>
+                <span className="font-display ml-auto text-[1.15rem] font-extrabold whitespace-nowrap tabular-nums">{rupiah(sum)}</span>
               </button>
             )
           })}
