@@ -13,7 +13,7 @@ export default function InstallCard({ always = false }: { always?: boolean }) {
   const [installed, setInstalled] = useState(isInstalled)
 
   useEffect(() => {
-    const mq = window.matchMedia('(display-mode: standalone)')
+    const mq = window.matchMedia('(display-mode: standalone), (display-mode: fullscreen)')
     const on = () => setInstalled(isInstalled())
     mq.addEventListener('change', on)
     return () => mq.removeEventListener('change', on)

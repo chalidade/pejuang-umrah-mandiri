@@ -38,7 +38,7 @@ export async function promptInstall() {
 }
 
 export const isInstalled = () =>
-  Capacitor.isNativePlatform() || window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true
+  Capacitor.isNativePlatform() || window.matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true
 
 export type Platform = 'ios' | 'android' | 'lain'
 export function platform(): Platform {
