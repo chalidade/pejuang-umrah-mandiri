@@ -55,7 +55,7 @@ export default function Home() {
       </header>
 
       <section className="relative h-[236px] overflow-hidden rounded-[28px] bg-nabawi px-5 pt-[18px] text-white">
-        <div className="absolute top-[22px] right-[26px] h-[54px] w-[54px] rounded-full bg-emas" aria-hidden />
+        <img src={`${import.meta.env.BASE_URL}logo/simbol-di-biru.svg`} alt="" className="absolute top-[14px] right-[16px] h-[84px] w-[84px]" aria-hidden />
         <span className="inline-flex items-center gap-2 rounded-full bg-white/16 px-3 py-1.5 text-[0.78rem] font-semibold">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff" aria-hidden>
             <path d="M21 16v-2l-8-5V3.500a1.500 1.500 0 00-3 0V9l-8 5v2l8-2.500V19l-2 1.500V22l3.500-1 3.500 1v-1.500L13 19v-5.500z" transform="rotate(45 12 12)" />

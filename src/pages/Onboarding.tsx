@@ -1,3 +1,4 @@
+import { useWarnaBar } from '../lib/themeColor'
 import { useMemo, useState } from 'react'
 import { db, DEFAULT_TRIP, saveTrip, stamp, type Trip } from '../db'
 import { costTotal, defaultCostRows } from '../data/costs'
@@ -33,6 +34,7 @@ function Arrow() {
 export default function Onboarding({ initial }: { initial: Trip | null }) {
   const base = initial ?? DEFAULT_TRIP
   const [step, setStep] = useState(0)
+  useWarnaBar(step === 0 || step === 4 ? '#1857F0' : '#FFFFFF')
   const [name, setName] = useState(base.nickname ?? '')
   const [depart, setDepart] = useState(base.departDate ?? '')
   const [unknownDate, setUnknownDate] = useState(!!initial && !base.departDate)

@@ -17,7 +17,7 @@ export default defineConfig({
         short_name: 'Pejuang Umrah',
         description: 'Teman perjalanan umroh mandiri: persiapan, biaya, dan panduan ibadah yang bisa dipakai offline.',
         lang: 'id',
-        theme_color: '#1857F0',
+        theme_color: '#FFFFFF',
         background_color: '#FFFFFF',
         display: 'standalone',
         orientation: 'portrait',
