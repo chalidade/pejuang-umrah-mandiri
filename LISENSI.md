@@ -15,23 +15,21 @@ Selama server belum disiapkan, aplikasi tetap jalan seperti biasa dan semua fitu
 
 Batasnya bisa diubah di `src/lib/lisensi.ts` (`GRATIS`).
 
-## Setup sekali (±15 menit)
+## Setup
 
-1. **Daftar Cloudflare** di https://dash.cloudflare.com/sign-up (gratis).
-2. **Buat database D1**: menu *Storage & Databases → D1 → Create*, nama `pejuang-umrah-lisensi`.
-   Salin **Database ID**-nya. Tabel dibuat otomatis saat server pertama kali dipanggil.
-3. **Buat API token**: *My Profile → API Tokens → Create Token → template "Edit Cloudflare Workers"*,
-   tambahkan izin **Account · D1 · Edit**. Salin tokennya.
-4. **Catat Account ID**: ada di sidebar kanan halaman Workers & Pages.
-5. **Buat kunci admin**: kata sandi panjang buatanmu sendiri (min. 24 karakter acak). Ini untuk halaman Admin lisensi.
-6. Di GitHub repo → *Settings → Secrets and variables → Actions*:
-   - **Secrets**: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `D1_DATABASE_ID`, `ADMIN_KUNCI`
-7. Jalankan workflow **Deploy server lisensi (Cloudflare)** (tab Actions → Run workflow).
-   Di log akan muncul alamat server, mis. `https://pejuang-umrah-lisensi.<akun>.workers.dev`.
-8. Masih di *Secrets and variables → Actions*, tab **Variables**:
-   - `LISENSI_API` = alamat server dari langkah 7 (tanpa `/` di akhir)
-   - `LISENSI_BELI` = link beli, mis. `https://wa.me/62812xxxx?text=Halo%2C%20mau%20beli%20Pejuang%20Umrah%20Pro`
-9. Jalankan ulang workflow **Deploy web (GitHub Pages)**. Paywall sekarang aktif.
+Sudah siap: database D1 `pejuang-umrah-lisensi`, Account ID dan Database ID (di `server/lisensi/wrangler.toml`),
+alamat server `https://pejuang-umrah-lisensi.chalidade.workers.dev`.
+
+Tinggal dua secret di GitHub (*Settings → Secrets and variables → Actions → New repository secret*):
+
+1. `CLOUDFLARE_API_TOKEN`: buat di Cloudflare *My Profile → API Tokens → Create Token → Custom token*,
+   izin **Account · Workers Scripts · Edit**, **Account · D1 · Edit**, **Account · Account Settings · Read**.
+2. `ADMIN_KUNCI`: kata sandi panjang buatanmu sendiri (min. 24 karakter). Dipakai di halaman Admin lisensi.
+
+Lalu jalankan workflow **Deploy server lisensi (Cloudflare)** (tab Actions → Run workflow).
+Workflow itu otomatis menerbitkan ulang web, dan paywall langsung aktif.
+
+Opsional (*Variables*): `LISENSI_BELI` = link beli, mis. `https://wa.me/62812xxxx?text=Mau%20beli%20Pejuang%20Umrah%20Pro`.
 
 ## Menjual kunci (manual)
 

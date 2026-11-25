@@ -1,10 +1,10 @@
-# Konfigurasi untuk uji lokal (npx wrangler dev). Saat deploy, workflow .github/workflows/lisensi.yml
-# mengganti database_id dengan secret D1_DATABASE_ID.
+# Server lisensi. Deploy lewat .github/workflows/lisensi.yml (butuh secret CLOUDFLARE_API_TOKEN & ADMIN_KUNCI).
 name = "pejuang-umrah-lisensi"
 main = "worker.js"
+account_id = "e4845ae23af74b101d574db4092f093d"
 compatibility_date = "2026-11-01"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "pejuang-umrah-lisensi"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "ddd6ef89-5ba0-4de6-a97f-5b61c3693fe1"

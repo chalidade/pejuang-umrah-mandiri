@@ -6,13 +6,15 @@ on:
     paths: ['server/lisensi/**', '.github/workflows/lisensi.yml']
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
       ADMIN_KUNCI: ${{ secrets.ADMIN_KUNCI }}
     defaults:
       run:
@@ -22,7 +24,7 @@ jobs:
       - name: Cek secret
         id: cek
         run: |
-          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ] || [ -z "$D1_DATABASE_ID" ] || [ -z "$ADMIN_KUNCI" ]; then
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$ADMIN_KUNCI" ]; then
             echo "Secret Cloudflare belum lengkap, deploy dilewati. Lihat LISENSI.md." >> "$GITHUB_STEP_SUMMARY"
             echo "ok=0" >> "$GITHUB_OUTPUT"
           else
@@ -35,6 +37,10 @@ jobs:
       - name: Deploy
         if: steps.cek.outputs.ok == '1'
         run: |
-          sed -i "s/00000000-0000-0000-0000-000000000000/$D1_DATABASE_ID/" wrangler.toml
           npx -y wrangler@4 deploy
           printf '%s' "$ADMIN_KUNCI" | npx -y wrangler@4 secret put ADMIN_KUNCI
+      - name: Terbitkan ulang web dengan paywall aktif
+        if: steps.cek.outputs.ok == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY"
