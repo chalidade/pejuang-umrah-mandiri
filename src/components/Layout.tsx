@@ -1,3 +1,4 @@
+import { UcapanPro } from './Pro'
 import { NavLink, Outlet } from 'react-router-dom'
 
 const ICONS: Record<string, string> = {
@@ -22,6 +23,7 @@ export default function Layout() {
       <main className="flex-1 pb-28">
         <Outlet />
       </main>
+      <UcapanPro />
       <nav className="pb-safe fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-garis bg-white/95 backdrop-blur" aria-label="Navigasi utama">
         <ul className="flex px-2">
           {NAV.map((n) => (

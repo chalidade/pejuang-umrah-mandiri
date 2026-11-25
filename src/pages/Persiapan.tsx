@@ -1,3 +1,5 @@
+import { ProKartu } from '../components/Pro'
+import { GRATIS, useLisensi } from '../lib/lisensi'
 import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, defaultUid, newUid, softDelete, stamp } from '../db'
@@ -31,6 +33,13 @@ function Langkah() {
   const steps = useStepList()
   const status = useSteps()
   const [open, setOpen] = useState<string | null>(null)
+  const { pro } = useLisensi()
+  // langkah bawaan setelah langkah ke-3 hanya terbaca separuh di versi gratis; langkah buatan sendiri selalu terbuka
+  const terkunci = (s: { custom: boolean; body?: string }, i: number) => !pro && !s.custom && i >= GRATIS.langkahPenuh && !!s.body
+  const separuh = (t: string) => {
+    const cut = t.slice(0, Math.ceil(t.length / 2))
+    return cut.slice(0, Math.max(cut.lastIndexOf(' '), 1)) + '…'
+  }
   const [title, setTitle] = useState('')
   const [when, setWhen] = useState('')
   const [editing, setEditing] = useState<StepItem | null>(null)
@@ -72,7 +81,18 @@ function Langkah() {
                 </button>
                 <RemoveButton label={s.title} onClick={() => remove(s.id)} />
               </div>
-              {isOpen && (
+              {isOpen && terkunci(s, i) && (
+                <div className="border-t border-batu px-4 pt-3 pb-4 pl-13">
+                  <div className="relative">
+                    <p className="text-[0.95rem] leading-relaxed">{separuh(s.body ?? '')}</p>
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white" aria-hidden />
+                  </div>
+                  <div className="mt-3">
+                    <ProKartu judul="Lanjut baca dengan Pro">Penjelasan lengkap dan tips untuk langkah {i + 1} sampai {steps.length} ada di versi Pro.</ProKartu>
+                  </div>
+                </div>
+              )}
+              {isOpen && !terkunci(s, i) && (
                 <div className="border-t border-batu px-4 pt-3 pb-4 pl-13">
                   {s.body ? <p className="text-[0.95rem] leading-relaxed">{s.body}</p> : <p className="text-sm text-redup">Belum ada penjelasan.</p>}
                   {s.tips.length > 0 && (

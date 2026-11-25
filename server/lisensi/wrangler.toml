@@ -1,0 +1,10 @@
+# Konfigurasi untuk uji lokal (npx wrangler dev). Saat deploy, workflow .github/workflows/lisensi.yml
+# mengganti database_id dengan secret D1_DATABASE_ID.
+name = "pejuang-umrah-lisensi"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "pejuang-umrah-lisensi"
+database_id = "00000000-0000-0000-0000-000000000000"

@@ -18,9 +18,17 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Ambil kunci publik lisensi
+        if: ${{ vars.LISENSI_API != '' }}
+        run: |
+          PUB=$(curl -fsS "${{ vars.LISENSI_API }}/kunci-publik" | jq -c .jwk || true)
+          [ "$PUB" = "null" ] && PUB=""
+          echo "VITE_LISENSI_PUBKEY=$PUB" >> "$GITHUB_ENV"
       - run: npm run build
         env:
           BASE_PATH: /
+          VITE_LISENSI_API: ${{ vars.LISENSI_API }}
+          VITE_LISENSI_BELI: ${{ vars.LISENSI_BELI }}
       - run: cp dist/index.html dist/404.html && touch dist/.nojekyll
       - uses: peaceiris/actions-gh-pages@v4
         with:

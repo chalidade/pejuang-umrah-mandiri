@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Server lisensi (rahasia lokal)
+server/lisensi/.dev.vars
+server/lisensi/.wrangler

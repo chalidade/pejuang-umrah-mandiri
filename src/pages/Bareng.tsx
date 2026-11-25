@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { exportCode, importCode, lastSync, shareMessage, type MergeResult } from '../lib/sync'
 import { Button, PageHeader, inputClass } from '../components/ui'
+import { ProKartu } from '../components/Pro'
+import { useLisensi } from '../lib/lisensi'
 
 const STEPS = [
   'Kamu ketuk "Kirim ke partner" dan kirim pesannya lewat WhatsApp.',
@@ -14,6 +16,25 @@ function summary(r: MergeResult) {
 }
 
 export default function Bareng() {
+  const { pro } = useLisensi()
+  if (!pro)
+    return (
+      <div>
+        <PageHeader title="Umroh bareng" subtitle="Satu rencana untuk kamu dan partner, tanpa akun." back="/" />
+        <div className="space-y-4 px-5">
+          <ol className="space-y-2 text-[0.95rem]">
+            {STEPS.map((s, i) => (
+              <li key={s} className="flex gap-3"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-nabawi-muda text-sm font-bold text-nabawi">{i + 1}</span>{s}</li>
+            ))}
+          </ol>
+          <ProKartu judul="Umroh bareng untuk Pro">Satu lisensi Pro bisa dipakai di 2 HP: kamu dan partner.</ProKartu>
+        </div>
+      </div>
+    )
+  return <BarengPro />
+}
+
+function BarengPro() {
   const [sent, setSent] = useState('')
   const [text, setText] = useState('')
   const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null)

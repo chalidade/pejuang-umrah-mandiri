@@ -6,6 +6,7 @@ import Biaya from './pages/Biaya'
 import { lazy, Suspense } from 'react'
 import Panduan, { IbadahDetail, TempatDetail, TipDetail } from './pages/Ibadah'
 const Kelola = lazy(() => import('./pages/Kelola'))
+const AdminLisensi = lazy(() => import('./pages/AdminLisensi'))
 import Penghitung from './pages/Penghitung'
 import Darurat from './pages/Darurat'
 import Pengaturan from './pages/Pengaturan'
@@ -18,13 +19,23 @@ export default function App() {
   const trip = useTripRow()
   if (trip === undefined) return null
   // halaman tim konten bisa dibuka langsung tanpa melewati perkenalan
-  const kelola = /\/kelola\/?$/.test(window.location.pathname)
+  const kelola = /\/(kelola|admin-lisensi)\/?$/.test(window.location.pathname)
   if (!trip?.onboarded && !kelola) return <Onboarding initial={trip} />
 
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || '/'}>
       <ScrollTop />
       <Routes>
+        <Route
+          path="admin-lisensi"
+          element={
+            <div className="mx-auto min-h-dvh max-w-md bg-marmer">
+              <Suspense fallback={null}>
+                <AdminLisensi />
+              </Suspense>
+            </div>
+          }
+        />
         <Route
           path="kelola"
           element={

@@ -9,6 +9,8 @@ import { jutaan, parseAngka, riyal, rupiah, tanggal, today } from '../lib/format
 import { toIdr, useTrip } from '../lib/hooks'
 import { Button, Field, PageHeader, Progress, Tabs, inputClass } from '../components/ui'
 import { Uang } from '../components/Uang'
+import { ProKartu, ProSheet } from '../components/Pro'
+import { GRATIS, useLisensi } from '../lib/lisensi'
 import { IKON, IkonKategori, KUNCI_IKON, kunciIkon, warnaIkon } from '../components/IkonKategori'
 
 type Tab = 'kalkulator' | 'pengeluaran' | 'tabungan'
@@ -201,6 +203,7 @@ function Kalkulator() {
 
 function Tabungan() {
   const trip = useTrip()
+  const { pro, aktif } = useLisensi()
   const deposits = useLiveQuery(() => db.deposits.orderBy('date').reverse().filter((d) => !d.deleted).toArray(), []) ?? []
   const [amount, setAmount] = useState('')
   const saved = deposits.reduce((a, d) => a + d.amount, 0)
@@ -239,12 +242,19 @@ function Tabungan() {
         )}
       </div>
 
-      <form onSubmit={add} className="mt-4 flex gap-2">
-        <input inputMode="numeric" className={inputClass} placeholder="Nominal setoran" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label="Nominal setoran" />
-        <button type="submit" className="shrink-0 rounded-xl bg-nabawi px-5 font-semibold text-white">
-          Setor
-        </button>
-      </form>
+      {!pro && deposits.length >= GRATIS.setoran ? (
+        <div className="mt-4">
+          <ProKartu judul="Setoran berikutnya untuk Pro">Versi gratis bisa mencatat {GRATIS.setoran} setoran. Setoran yang sudah ada tetap tersimpan.</ProKartu>
+        </div>
+      ) : (
+        <form onSubmit={add} className="mt-4 flex gap-2">
+          <input inputMode="numeric" className={`${inputClass} min-w-0`} placeholder="Nominal setoran" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label="Nominal setoran" />
+          <button type="submit" className="shrink-0 rounded-xl bg-nabawi px-5 font-semibold text-white">
+            Setor
+          </button>
+        </form>
+      )}
+      {aktif && !pro && deposits.length < GRATIS.setoran && <p className="mt-1.5 text-xs text-redup">Versi gratis: {deposits.length} dari {GRATIS.setoran} setoran terpakai.</p>}
 
       <div className="mt-4">
         <Field label="Target tabungan (Rp)" hint="Atau isi otomatis dari tab Estimasi.">
@@ -298,6 +308,8 @@ interface Draft {
 const emptyDraft = (phase: ExpensePhase = 'pra'): Draft => ({ title: '', amount: '', currency: phase === 'umroh' ? 'SAR' : 'IDR', phase, categoryUid: '', date: today() })
 
 function Pengeluaran() {
+  const { pro, aktif } = useLisensi()
+  const [proBuka, setProBuka] = useState(false)
   const trip = useTrip()
   const expenses = (useLiveQuery(() => db.expenses.orderBy('date').reverse().filter((e) => !e.deleted).toArray(), []) ?? []).map(normalizeExpense)
   const categories = useLiveQuery(() => db.categories.orderBy('order').filter((c) => !c.deleted).toArray(), []) ?? []
@@ -386,13 +398,19 @@ function Pengeluaran() {
       )}
 
       <div className="mt-4 flex gap-2">
-        <Button className="flex-1" onClick={() => setDraft(emptyDraft(filter === 'semua' ? 'pra' : filter))}>
+        <Button className="flex-1" onClick={() => (!pro && expenses.length >= GRATIS.pengeluaran ? setProBuka(true) : setDraft(emptyDraft(filter === 'semua' ? 'pra' : filter)))}>
           Catat pengeluaran
         </Button>
         <Button variant="ghost" onClick={() => setManage(true)}>
           Kategori
         </Button>
       </div>
+      {aktif && !pro && (
+        <p className="mt-1.5 text-xs text-redup">
+          Versi gratis: {Math.min(expenses.length, GRATIS.pengeluaran)} dari {GRATIS.pengeluaran} catatan terpakai.
+        </p>
+      )}
+      {proBuka && <ProSheet alasan={`Versi gratis bisa mencatat ${GRATIS.pengeluaran} pengeluaran. Catatan yang sudah ada tetap bisa dilihat dan diubah.`} onClose={() => setProBuka(false)} />}
 
       {shown.length === 0 ? (
         <p className="mt-6 text-center text-sm text-redup">
