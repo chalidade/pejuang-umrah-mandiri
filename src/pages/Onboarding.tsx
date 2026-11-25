@@ -1,4 +1,6 @@
 import { useWarnaBar } from '../lib/themeColor'
+import { AKUN_AKTIF } from '../lib/akun'
+import { TombolGoogle } from '../components/Akun'
 import { useMemo, useState } from 'react'
 import { db, DEFAULT_TRIP, saveTrip, stamp, type Trip } from '../db'
 import { costTotal, defaultCostRows } from '../data/costs'
@@ -34,6 +36,8 @@ function Arrow() {
 export default function Onboarding({ initial }: { initial: Trip | null }) {
   const base = initial ?? DEFAULT_TRIP
   const [step, setStep] = useState(0)
+  const [pulih, setPulih] = useState(false)
+  const [pulihInfo, setPulihInfo] = useState('')
   useWarnaBar(step === 0 || step === 4 ? '#1857F0' : '#FFFFFF')
   const [name, setName] = useState(base.nickname ?? '')
   const [depart, setDepart] = useState(base.departDate ?? '')
@@ -77,7 +81,19 @@ export default function Onboarding({ initial }: { initial: Trip | null }) {
           <button onClick={next} className="w-full rounded-2xl bg-white py-4 text-[1.05rem] font-bold text-nabawi shadow-[0_10px_24px_rgba(0,0,0,0.18)]">
             Mulai persiapan
           </button>
-          <p className="mt-3 text-center text-xs text-white/75">Tanpa akun. Bisa diubah kapan saja.</p>
+          {AKUN_AKTIF ? (
+            pulih ? (
+              <div className="mt-3 rounded-2xl bg-white p-4 text-tinta">
+                <p className="mb-3 text-center text-sm font-semibold">Masuk dengan akun Google yang dulu kamu pakai</p>
+                <TombolGoogle onHasil={(ada) => { if (!ada) setPulihInfo('Belum ada data di akun ini. Ketuk Mulai persiapan untuk mulai baru. Cadangan otomatis sudah aktif.') }} />
+                {pulihInfo && <p className="mt-2 text-center text-sm text-redup">{pulihInfo}</p>}
+              </div>
+            ) : (
+              <button onClick={() => setPulih(true)} className="mt-3 w-full py-2 text-center text-sm font-semibold text-white/90 underline">Pernah pakai? Pulihkan data dengan Google</button>
+            )
+          ) : (
+            <p className="mt-3 text-center text-xs text-white/75">Tanpa akun. Bisa diubah kapan saja.</p>
+          )}
         </div>
       </div>
     )

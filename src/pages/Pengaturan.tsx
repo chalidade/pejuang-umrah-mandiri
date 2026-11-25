@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { LisensiPengaturan } from '../components/Pro'
+import { AkunPengaturan } from '../components/Akun'
+import { useAkun } from '../lib/akun'
 import { db, saveTrip, type Trip } from '../db'
 import { parseAngka } from '../lib/format'
 import { useTrip } from '../lib/hooks'
@@ -10,6 +12,7 @@ import { adalahTim, tandaiTim } from '../lib/tim'
 
 export default function Pengaturan() {
   const trip = useTrip()
+  const { akun } = useAkun()
   const set = (patch: Partial<Trip>) => saveTrip(patch)
   const [confirm, setConfirm] = useState(false)
   const [tim, setTim] = useState(adalahTim)
@@ -27,7 +30,7 @@ export default function Pengaturan() {
 
   return (
     <div>
-      <PageHeader title="Atur perjalanan" subtitle="Semua data tersimpan di HP-mu saja." back="/" />
+      <PageHeader title="Atur perjalanan" subtitle={akun ? "Tersimpan di HP-mu dan dicadangkan ke akun Google." : "Semua data tersimpan di HP-mu."} back="/" />
       <form className="space-y-4 px-5" onSubmit={(e) => e.preventDefault()}>
         <div className="grid gap-3 min-[420px]:grid-cols-2">
           <Field label="Namamu">
@@ -81,6 +84,7 @@ export default function Pengaturan() {
           <input className={inputClass} value={trip.allergies ?? ''} onChange={(e) => set({ allergies: e.target.value })} />
         </Field>
 
+        <AkunPengaturan />
         <LisensiPengaturan />
 
         <h2 className="pt-2 text-lg font-bold tracking-tight">Aplikasi</h2>

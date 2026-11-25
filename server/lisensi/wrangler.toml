@@ -8,3 +8,7 @@ compatibility_date = "2026-11-01"
 binding = "DB"
 database_name = "pejuang-umrah-lisensi"
 database_id = "ddd6ef89-5ba0-4de6-a97f-5b61c3693fe1"
+
+[vars]
+# Client ID OAuth Google (bukan rahasia). Kosong = Login Google nonaktif.
+GOOGLE_CLIENT_ID = ""

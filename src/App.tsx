@@ -14,6 +14,9 @@ import Bareng from './pages/Bareng'
 import ScrollTop from './components/ScrollTop'
 import Onboarding from './pages/Onboarding'
 import { useTripRow } from './lib/hooks'
+import { mulaiOtomatis } from './lib/akun'
+
+mulaiOtomatis()
 
 export default function App() {
   const trip = useTripRow()

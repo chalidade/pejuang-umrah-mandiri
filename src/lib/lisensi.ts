@@ -73,7 +73,10 @@ async function periksaToken(token: string): Promise<Payload | null> {
 async function panggil(path: string, body: unknown) {
   let res: Response
   try {
-    res = await fetch(API + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    // kalau login Google, kirim sesi supaya HP lama dengan akun yang sama bisa digantikan (pasang ulang aplikasi)
+    let sesi = ''
+    try { sesi = JSON.parse(localStorage.getItem('pum-akun') ?? 'null')?.sesi ?? '' } catch { /* abaikan */ }
+    res = await fetch(API + path, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(sesi ? { Authorization: `Bearer ${sesi}` } : {}) }, body: JSON.stringify(body) })
   } catch {
     throw new Error('Tidak bisa terhubung. Pastikan ada internet, lalu coba lagi.')
   }
@@ -119,6 +122,9 @@ export async function aktivasi(kunci: string) {
   setState({ status: 'pro', kunci: p.k, nama: p.n, baru: true })
   return p
 }
+
+/** Kunci lisensi yang aktif di HP ini (untuk dicadangkan ke akun). */
+export const kunciLisensi = () => (state.status === 'pro' ? state.kunci : undefined)
 
 /** Tutup ucapan selamat setelah aktivasi. */
 export const tutupUcapan = () => setState({ ...state, baru: false })

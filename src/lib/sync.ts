@@ -10,6 +10,10 @@ const GZIP = 'PUM1z:'
 
 // Yang ikut dikirim. Info medis dan kontak darurat sengaja tidak ikut.
 const SHARED_TRIP_FIELDS = ['name', 'departDate', 'returnDate', 'travelers', 'savingsTarget', 'sarRate', 'hotelMakkah', 'hotelMadinah'] as const
+// Cadangan ke akun sendiri: semua isian perjalanan, termasuk nama, info medis, dan kontak darurat.
+const BACKUP_TRIP_FIELDS = [...SHARED_TRIP_FIELDS, 'nickname', 'onboarded', 'bloodType', 'allergies', 'emergencyContact'] as const
+type Mode = 'bagi' | 'cadangan'
+const fieldsFor = (m: Mode): readonly (keyof Trip)[] => (m === 'cadangan' ? BACKUP_TRIP_FIELDS : SHARED_TRIP_FIELDS)
 
 interface Payload {
   v: number
@@ -41,14 +45,14 @@ async function pipe(bytes: Uint8Array, stream: CompressionStream | Decompression
   return new Uint8Array(await new Response(out).arrayBuffer())
 }
 
-export async function exportCode(): Promise<string> {
+/** Isi data perjalanan (tanpa waktu kemas), untuk dibagi atau dicadangkan. */
+export async function kemas(mode: Mode = 'bagi'): Promise<Omit<Payload, 'at'>> {
   const trip = await getTrip()
   const shared: Partial<Trip> = { updatedAt: trip.updatedAt ?? 0 }
-  for (const k of SHARED_TRIP_FIELDS) if (trip[k] !== undefined) (shared as Record<string, unknown>)[k] = trip[k]
+  for (const k of fieldsFor(mode)) if (trip[k] !== undefined) (shared as Record<string, unknown>)[k] = trip[k]
   const strip = <T extends { id?: number }>(rows: T[]) => rows.map(({ id: _id, ...rest }) => rest)
-  const payload = {
+  return {
     v: VERSION,
-    at: Date.now(),
     trip: shared,
     steps: await db.steps.toArray(),
     // item bawaan yang belum pernah disentuh tidak perlu dikirim
@@ -58,10 +62,17 @@ export async function exportCode(): Promise<string> {
     costs: strip((await db.costs.toArray()).filter((c) => c.updatedAt > 0)),
     categories: strip((await db.categories.toArray()).filter((c) => c.updatedAt > 0)),
   }
+}
+
+/** Ubah isi data jadi kode teks ringkas (gzip + base64). */
+export async function keKode(isi: Omit<Payload, 'at'>): Promise<string> {
+  const payload = { ...isi, at: Date.now() }
   const bytes = new TextEncoder().encode(JSON.stringify(payload))
   if ('CompressionStream' in globalThis) return GZIP + toB64(await pipe(bytes, new CompressionStream('gzip')))
   return PLAIN + toB64(bytes)
 }
+
+export const exportCode = async () => keKode(await kemas('bagi'))
 
 async function decode(text: string): Promise<Payload> {
   const m = text.match(/PUM1(z?):([A-Za-z0-9+/=]+)/)
@@ -73,15 +84,16 @@ async function decode(text: string): Promise<Payload> {
   return data
 }
 
-export async function importCode(text: string): Promise<MergeResult> {
+export async function importCode(text: string, mode: Mode = 'bagi'): Promise<MergeResult> {
   const remote = await decode(text)
+  const fields = fieldsFor(mode)
   const res: MergeResult = { added: 0, updated: 0, removed: 0 }
 
   await db.transaction('rw', [db.trip, db.steps, db.checklist, db.expenses, db.deposits, db.costs, db.categories], async () => {
     const local = await getTrip()
     if ((remote.trip.updatedAt ?? 0) > (local.updatedAt ?? 0)) {
       const next: Trip = { ...local }
-      for (const k of SHARED_TRIP_FIELDS) (next as unknown as Record<string, unknown>)[k] = remote.trip[k]
+      for (const k of fields) if (k in remote.trip || mode === 'bagi') (next as unknown as Record<string, unknown>)[k] = remote.trip[k]
       await db.trip.put({ ...next, id: 'main', updatedAt: remote.trip.updatedAt })
       res.updated++
     }
@@ -122,6 +134,7 @@ export async function importCode(text: string): Promise<MergeResult> {
     }
   })
 
+  if (mode === 'cadangan') return res
   try {
     localStorage.setItem('sync-terakhir', String(Date.now()))
   } catch {
