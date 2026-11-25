@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Button, Field, PageHeader, inputClass } from '../components/ui'
 import { ADMIN_API } from '../lib/lisensi'
 import { tanggal } from '../lib/format'
+import { tandaiTim } from '../lib/tim'
 
 const K_ADMIN = 'pum-admin-lisensi'
 type Hp = { perangkat: string; nama: string | null; terakhir: number }
@@ -41,6 +42,7 @@ const linkWa = (l: Pick<Lis, 'nama' | 'kunci' | 'kontak'>) => `https://wa.me/${n
 const jam = (t: number) => tanggal(new Date(t).toISOString().slice(0, 10))
 
 export default function AdminLisensi() {
+  useEffect(() => tandaiTim(), [])
   const [kunci, setKunci] = useState(() => ls.get(K_ADMIN) ?? '')
   const [input, setInput] = useState('')
   const [data, setData] = useState<Lis[] | null>(null)

@@ -11,6 +11,7 @@ import {
   type Doa, type IbadahData, type Jenis, type Konten, type Media, type TempatData, type TipData, type Usulan,
 } from '../lib/konten'
 import kontenTayang from '../data/konten.json'
+import { tandaiTim } from '../lib/tim'
 
 const REPO = 'chalidade/pejuang-umrah-mandiri'
 const BRANCH = 'main'
@@ -64,6 +65,7 @@ type Draf = { konten: Konten; asli: string; sha: string }
 const beda = (d: Draf) => JSON.stringify(rapikan(d.konten)) !== JSON.stringify(rapikan(JSON.parse(d.asli)))
 
 export default function Kelola() {
+  useEffect(() => tandaiTim(), [])
   const [token, setToken] = useState(() => store.get(K_TOKEN) ?? '')
   const [draf, setDraf] = useState<Draf | null>(() => { try { return JSON.parse(store.get(K_DRAF) ?? 'null') } catch { return null } })
   const [busy, setBusy] = useState(false)
