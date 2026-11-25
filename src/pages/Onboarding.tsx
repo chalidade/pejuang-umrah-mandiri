@@ -1,5 +1,5 @@
 import { useWarnaBar } from '../lib/themeColor'
-import { AKUN_AKTIF } from '../lib/akun'
+import { AKUN_AKTIF, useAkun } from '../lib/akun'
 import { TombolGoogle } from '../components/Akun'
 import { useMemo, useState } from 'react'
 import { db, DEFAULT_TRIP, saveTrip, stamp, type Trip } from '../db'
@@ -33,11 +33,19 @@ function Arrow() {
   )
 }
 
+function Centang() {
+  return (
+    <svg className="mt-0.5 shrink-0 text-nabawi" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </svg>
+  )
+}
+
 export default function Onboarding({ initial }: { initial: Trip | null }) {
   const base = initial ?? DEFAULT_TRIP
   const [step, setStep] = useState(0)
-  const [pulih, setPulih] = useState(false)
-  const [pulihInfo, setPulihInfo] = useState('')
+  const [pilih, setPilih] = useState(false)
+  const akun = useAkun().akun
   useWarnaBar(step === 0 || step === 4 ? '#1857F0' : '#FFFFFF')
   const [name, setName] = useState(base.nickname ?? '')
   const [depart, setDepart] = useState(base.departDate ?? '')
@@ -59,6 +67,54 @@ export default function Onboarding({ initial }: { initial: Trip | null }) {
     if (n > 0) await db.deposits.add({ amount: n, date: today(), note: 'Tabungan awal', ...stamp() })
   }
 
+  // Pilih: masuk dengan Google atau lanjut sebagai tamu
+  if (step === 0 && pilih) {
+    const setelahMasuk = (dipulihkan: boolean) => {
+      // ada data lama: aplikasi langsung terbuka (onboarded ikut dipulihkan). Belum ada: lanjut isi perkenalan.
+      if (dipulihkan) return
+      const depan = (akun?.nama || '').trim().split(/\s+/)[0]
+      if (depan && !name.trim()) setName(depan)
+      next()
+    }
+    return (
+      <div className="pt-safe pb-safe mx-auto flex min-h-dvh max-w-md flex-col bg-marmer px-5">
+        <button onClick={() => setPilih(false)} className="mt-5 flex items-center gap-1 self-start text-sm font-semibold text-nabawi">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M15 6l-6 6 6 6" /></svg>
+          Kembali
+        </button>
+        <h1 className="mt-5 text-[1.9rem] leading-tight font-extrabold tracking-tight">Simpan datamu di mana?</h1>
+        <p className="mt-2 text-[0.98rem] leading-relaxed text-redup">Catatan, tabungan, dan pengeluaranmu bakal terus bertambah sampai hari berangkat. Pilih cara menyimpannya.</p>
+
+        <section className="mt-6 rounded-2xl border-2 border-nabawi bg-white p-4 shadow-[0_6px_18px_rgba(24,87,240,0.1)]">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-lg font-bold">Masuk dengan Google</h2>
+            <span className="shrink-0 rounded-full bg-nabawi-muda px-2.5 py-1 text-xs font-bold text-nabawi">Disarankan</span>
+          </div>
+          <ul className="mt-2 space-y-1.5 text-[0.95rem]">
+            {['Data dicadangkan otomatis ke akunmu', 'Ganti HP atau pasang ulang, tinggal masuk lagi', 'Lisensi Pro ikut tersimpan'].map((t) => (
+              <li key={t} className="flex gap-2"><Centang />{t}</li>
+            ))}
+          </ul>
+          <p className="mt-2 text-sm text-redup">Sudah pernah pakai? Masuk dengan akun yang sama, datamu kembali.</p>
+          <div className="mt-4"><TombolGoogle onHasil={setelahMasuk} /></div>
+        </section>
+
+        <section className="mt-4 rounded-2xl border border-garis bg-white p-4">
+          <h2 className="text-lg font-bold">Lanjut sebagai tamu</h2>
+          <p className="mt-2 flex gap-2 rounded-xl bg-emas-muda px-3 py-2.5 text-sm leading-relaxed">
+            <span aria-hidden className="font-bold">!</span>
+            <span>Data hanya tersimpan di HP ini. Kalau aplikasi dihapus, HP hilang, atau ganti HP, datanya <b>tidak bisa dikembalikan</b>.</span>
+          </p>
+          <p className="mt-2 text-sm text-redup">Kamu bisa masuk dengan Google kapan saja dari Pengaturan.</p>
+          <button onClick={next} className="mt-4 w-full rounded-xl border border-garis py-3 font-semibold text-tinta">Lanjut sebagai tamu</button>
+        </section>
+        <p className="mt-4 mb-6 text-center text-xs text-redup">
+          Dengan masuk, kamu menyetujui <a href="/privasi" className="underline">kebijakan privasi</a> kami.
+        </p>
+      </div>
+    )
+  }
+
   // Layar sambutan
   if (step === 0) {
     return (
@@ -70,7 +126,7 @@ export default function Onboarding({ initial }: { initial: Trip | null }) {
             Pejuang Umrah
           </p>
           <h1 className="mt-3 text-[2.6rem] leading-[1.05] font-extrabold">Umroh mandiri, nggak pakai ribet.</h1>
-          <p className="mt-4 max-w-[30ch] text-[1.02rem] leading-relaxed text-white/85">Persiapan, biaya, dan panduan ibadah dalam satu tempat. Semua tersimpan di HP-mu, tetap jalan tanpa internet.</p>
+          <p className="mt-4 max-w-[30ch] text-[1.02rem] leading-relaxed text-white/85">Persiapan, biaya, dan panduan ibadah dalam satu tempat. Tetap jalan tanpa internet.</p>
           <p className="tulis mt-6 flex -rotate-3 items-end gap-1 text-[1.6rem] !text-[#FFE08A]" aria-hidden>
             bismillah, kita mulai!
             <Arrow />
@@ -78,22 +134,10 @@ export default function Onboarding({ initial }: { initial: Trip | null }) {
         </div>
         <Skyline className="h-[120px]" />
         <div className="relative mt-auto mb-8">
-          <button onClick={next} className="w-full rounded-2xl bg-white py-4 text-[1.05rem] font-bold text-nabawi shadow-[0_10px_24px_rgba(0,0,0,0.18)]">
+          <button onClick={() => (AKUN_AKTIF && !akun ? setPilih(true) : next())} className="w-full rounded-2xl bg-white py-4 text-[1.05rem] font-bold text-nabawi shadow-[0_10px_24px_rgba(0,0,0,0.18)]">
             Mulai persiapan
           </button>
-          {AKUN_AKTIF ? (
-            pulih ? (
-              <div className="mt-3 rounded-2xl bg-white p-4 text-tinta">
-                <p className="mb-3 text-center text-sm font-semibold">Masuk dengan akun Google yang dulu kamu pakai</p>
-                <TombolGoogle onHasil={(ada) => { if (!ada) setPulihInfo('Belum ada data di akun ini. Ketuk Mulai persiapan untuk mulai baru. Cadangan otomatis sudah aktif.') }} />
-                {pulihInfo && <p className="mt-2 text-center text-sm text-redup">{pulihInfo}</p>}
-              </div>
-            ) : (
-              <button onClick={() => setPulih(true)} className="mt-3 w-full py-2 text-center text-sm font-semibold text-white/90 underline">Pernah pakai? Pulihkan data dengan Google</button>
-            )
-          ) : (
-            <p className="mt-3 text-center text-xs text-white/75">Tanpa akun. Bisa diubah kapan saja.</p>
-          )}
+          <p className="mt-3 text-center text-xs text-white/75">{AKUN_AKTIF ? 'Masuk dengan Google atau lanjut sebagai tamu.' : 'Tanpa akun. Bisa diubah kapan saja.'}</p>
         </div>
       </div>
     )
