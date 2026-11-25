@@ -133,6 +133,7 @@ export default function Pengaturan() {
             </Button>
           )}
         </div>
+        <Link to="/privasi" className="block pt-2 text-center text-sm font-semibold text-redup underline">Kebijakan privasi</Link>
         <button type="button" onClick={ketukVersi} className="block w-full select-none pb-4 pt-2 text-center text-xs text-redup">
           Pejuang Umrah Mandiri{ketuk >= 3 && ketuk < 7 ? ` · ${7 - ketuk} ketukan lagi` : ''}
         </button>

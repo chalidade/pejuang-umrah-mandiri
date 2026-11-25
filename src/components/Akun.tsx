@@ -39,6 +39,7 @@ export function AkunPengaturan() {
           <p className="font-bold">Simpan data ke akun Google</p>
           <p className="mt-1 mb-4 text-sm leading-relaxed text-redup">Catatan, tabungan, pengeluaran, dan lisensi Pro dicadangkan otomatis. Kalau ganti HP atau aplikasi terhapus, cukup masuk lagi dan semua kembali.</p>
           <TombolGoogle onHasil={(d) => setInfo(d ? 'Data dari akunmu sudah dipulihkan ke HP ini.' : 'Cadangan otomatis aktif.')} />
+          <p className="mt-3 text-center text-xs text-redup">Lihat <a href="/privasi" className="underline">kebijakan privasi</a>.</p>
         </div>
       ) : (
         <div className="rounded-2xl border border-garis bg-white p-4">

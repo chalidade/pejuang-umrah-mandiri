@@ -7,6 +7,7 @@ import { lazy, Suspense } from 'react'
 import Panduan, { IbadahDetail, TempatDetail, TipDetail } from './pages/Ibadah'
 const Kelola = lazy(() => import('./pages/Kelola'))
 const AdminLisensi = lazy(() => import('./pages/AdminLisensi'))
+const Privasi = lazy(() => import('./pages/Privasi'))
 import Penghitung from './pages/Penghitung'
 import Darurat from './pages/Darurat'
 import Pengaturan from './pages/Pengaturan'
@@ -22,7 +23,7 @@ export default function App() {
   const trip = useTripRow()
   if (trip === undefined) return null
   // halaman tim konten bisa dibuka langsung tanpa melewati perkenalan
-  const kelola = /\/(kelola|admin-lisensi)\/?$/.test(window.location.pathname)
+  const kelola = /\/(kelola|admin-lisensi|privasi)\/?$/.test(window.location.pathname)
   if (!trip?.onboarded && !kelola) return <Onboarding initial={trip} />
 
   return (
@@ -35,6 +36,16 @@ export default function App() {
             <div className="mx-auto min-h-dvh max-w-md bg-marmer">
               <Suspense fallback={null}>
                 <AdminLisensi />
+              </Suspense>
+            </div>
+          }
+        />
+        <Route
+          path="privasi"
+          element={
+            <div className="mx-auto min-h-dvh max-w-md bg-marmer">
+              <Suspense fallback={null}>
+                <Privasi />
               </Suspense>
             </div>
           }
