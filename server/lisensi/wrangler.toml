@@ -11,4 +11,4 @@ database_id = "ddd6ef89-5ba0-4de6-a97f-5b61c3693fe1"
 
 [vars]
 # Client ID OAuth Google (bukan rahasia). Kosong = Login Google nonaktif.
-GOOGLE_CLIENT_ID = ""
+GOOGLE_CLIENT_ID = "1037586807242-h6dk50ib1jk13jab71lv6hn07gdhmkg5.apps.googleusercontent.com"

@@ -8,7 +8,8 @@ import { importCode, kemas, keKode } from './sync'
 import { aktivasi, kunciLisensi } from './lisensi'
 
 const API = (import.meta.env.VITE_LISENSI_API ?? '').replace(/\/+$/, '')
-export const GOOGLE_CLIENT_ID: string = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? ''
+// Client ID OAuth Google (bukan rahasia), project Google Cloud "pejuang-umrah"
+export const GOOGLE_CLIENT_ID: string = import.meta.env.VITE_GOOGLE_CLIENT_ID || '1037586807242-h6dk50ib1jk13jab71lv6hn07gdhmkg5.apps.googleusercontent.com'
 export const AKUN_AKTIF = !!(API && GOOGLE_CLIENT_ID) && !Capacitor.isNativePlatform()
 
 const K = 'pum-akun'
