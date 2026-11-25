@@ -214,7 +214,7 @@ export default {
            ON CONFLICT (sub) DO UPDATE SET email = ?2, nama = ?3, terakhir = ?4`,
         ).bind(g.sub, g.email ?? null, g.name ?? null, sekarang).run()
         const sesi = await tandaTangan(env, { s: g.sub, e: g.email ?? '', x: sekarang + SESI_HARI * 864e5 })
-        return json(req, { sesi, email: g.email ?? '', nama: g.name ?? '' })
+        return json(req, { sesi, email: g.email ?? '', nama: g.name ?? '', foto: typeof g.picture === 'string' && g.picture.startsWith('https://') ? g.picture : '' })
       }
 
       if (p === '/cadangan' || p === '/akun') {

@@ -32,6 +32,8 @@ export default function Pengaturan() {
     <div>
       <PageHeader title="Atur perjalanan" subtitle={akun ? "Tersimpan di HP-mu dan dicadangkan ke akun Google." : "Semua data tersimpan di HP-mu."} back="/" />
       <form className="space-y-4 px-5" onSubmit={(e) => e.preventDefault()}>
+        <AkunPengaturan />
+        <h2 className="pt-2 text-lg font-bold tracking-tight">Perjalanan</h2>
         <div className="grid gap-3 min-[420px]:grid-cols-2">
           <Field label="Namamu">
             <input className={inputClass} placeholder="Contoh: Chalid" value={trip.nickname ?? ''} onChange={(e) => set({ nickname: e.target.value })} />
@@ -84,7 +86,6 @@ export default function Pengaturan() {
           <input className={inputClass} value={trip.allergies ?? ''} onChange={(e) => set({ allergies: e.target.value })} />
         </Field>
 
-        <AkunPengaturan />
         <LisensiPengaturan />
 
         <h2 className="pt-2 text-lg font-bold tracking-tight">Aplikasi</h2>

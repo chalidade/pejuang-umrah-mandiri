@@ -16,7 +16,7 @@ const K = 'pum-akun'
 const K_DIPELAJARI = 'pum-dipelajari'
 const INTERVAL = 2 * 60 * 1000
 
-type Akun = { sesi: string; email: string; nama: string; tarik: number; jejak: string; terakhir: number }
+type Akun = { sesi: string; email: string; nama: string; foto?: string; tarik: number; jejak: string; terakhir: number }
 type Status = 'diam' | 'menyimpan' | 'gagal'
 type State = { akun: Akun | null; status: Status; pesan?: string }
 
@@ -144,7 +144,7 @@ export async function pasangTombol(el: HTMLElement, selesai: (hasil: { dipulihka
 
 export async function masuk(idToken: string) {
   const j = await panggil('/akun/masuk', { method: 'POST', body: JSON.stringify({ idToken }) })
-  setState({ akun: { sesi: j.sesi, email: j.email, nama: j.nama, tarik: 0, jejak: '', terakhir: 0 } })
+  setState({ akun: { sesi: j.sesi, email: j.email, nama: j.nama, foto: j.foto || undefined, tarik: 0, jejak: '', terakhir: 0 } })
   return sinkron({ pulihkanLisensi: true })
 }
 

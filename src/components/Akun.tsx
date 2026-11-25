@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from './ui'
+import { FotoProfil } from './FotoProfil'
 import { AKUN_AKTIF, hapusAkun, keluar, pasangTombol, sinkron, useAkun } from '../lib/akun'
 
 /** Tombol resmi Google. onHasil dipanggil setelah masuk + pemulihan selesai. */
@@ -33,7 +34,7 @@ export function AkunPengaturan() {
   if (!AKUN_AKTIF) return null
   return (
     <>
-      <h2 className="pt-2 text-lg font-bold tracking-tight">Cadangan data</h2>
+      <h2 className="text-lg font-bold tracking-tight">Akun</h2>
       {!akun ? (
         <div className="rounded-2xl border border-garis bg-white p-4">
           <p className="font-bold">Simpan data ke akun Google</p>
@@ -43,8 +44,13 @@ export function AkunPengaturan() {
         </div>
       ) : (
         <div className="rounded-2xl border border-garis bg-white p-4">
-          <p className="font-bold">Tersimpan di akun Google</p>
-          <p className="mt-1 text-sm break-all text-redup">{akun.email}</p>
+          <div className="flex items-center gap-3">
+            <span className="h-12 w-12 shrink-0 overflow-hidden rounded-full"><FotoProfil /></span>
+            <span className="min-w-0">
+              <span className="block font-bold">{akun.nama || 'Akun Google'}</span>
+              <span className="block text-sm break-all text-redup">{akun.email}</span>
+            </span>
+          </div>
           <p className={`mt-2 text-sm ${status === 'gagal' ? 'text-bata' : 'text-nabawi'}`}>
             {status === 'menyimpan' ? 'Menyimpan…' : status === 'gagal' ? `Belum tersimpan: ${pesan}` : akun.terakhir ? `Tersimpan otomatis · ${jam(akun.terakhir)}` : 'Cadangan otomatis aktif'}
           </p>

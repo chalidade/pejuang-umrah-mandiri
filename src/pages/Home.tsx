@@ -5,6 +5,7 @@ import { db } from '../db'
 import { daysUntil, jutaan, tanggal } from '../lib/format'
 import { toIdr, useStepList, useTrip } from '../lib/hooks'
 import InstallCard from '../components/InstallCard'
+import { FotoProfil } from '../components/FotoProfil'
 
 const SHORTCUTS = [
   { to: '/ibadah', label: 'Panduan', icon: 'M4 5.500C7 4 10 4.500 12 6c2-1.500 5-2 8-.5V19c-3-1.500-6-1-8 .5-2-1.500-5-2-8-.5zM12 6v13.500' },
@@ -46,12 +47,8 @@ export default function Home() {
           <p className="text-[0.85rem] text-redup">Calon tamu Allah</p>
           <p className="font-display truncate text-[1.2rem] font-bold">{trip.nickname?.trim() || trip.name}</p>
         </div>
-        <Link to="/pengaturan" aria-label="Atur perjalanan" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-nabawi-muda text-tinta">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M4 7h10M18 7h2M4 17h2M10 17h10" />
-            <circle cx="16" cy="7" r="2" />
-            <circle cx="8" cy="17" r="2" />
-          </svg>
+        <Link to="/pengaturan" aria-label="Profil dan pengaturan" className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full bg-nabawi-muda text-tinta ring-2 ring-white">
+          <FotoProfil />
         </Link>
       </header>
 
