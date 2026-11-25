@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, defaultUid, newUid, softDelete, stamp } from '../db'
 import { DEFAULT_CHECKLIST } from '../data/checklist'
+import { PERLENGKAPAN } from '../data/konten'
+import { BeliKecil, ProdukList } from '../components/Produk'
+
+const BELI = new Map(PERLENGKAPAN.filter((p) => p.checklist).map((p) => [p.checklist!.toLowerCase(), p]))
 import { useStepList, useSteps, type StepItem } from '../lib/hooks'
 import RemoveButton from '../components/RemoveButton'
 import Sheet from '../components/Sheet'
@@ -303,6 +307,7 @@ function Barang() {
                       <Check checked={it.done} />
                       <span className={it.done ? 'text-redup line-through' : ''}>{it.label}</span>
                     </button>
+                    {!it.done && BELI.get(it.label.toLowerCase()) && <BeliKecil produk={BELI.get(it.label.toLowerCase())!} />}
                     <RemoveButton label={it.label} onClick={() => softDelete('checklist', it.id!)} />
                   </li>
                 ))}
@@ -339,6 +344,9 @@ function Barang() {
           )}
         </div>
       </form>
+      <div className="mt-6">
+        <ProdukList items={PERLENGKAPAN} judul="Belanja perlengkapan" />
+      </div>
     </div>
   )
 }

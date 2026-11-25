@@ -5,6 +5,7 @@ import { KATEGORI_LIST, KOTA_LIST, formatMenit, infoMedia, mapsUrl, type Kota } 
 import { useDipelajari } from '../lib/dipelajari'
 import { PageHeader, Tabs } from '../components/ui'
 import { Galeri, Pemutar, Thumb } from '../components/Media'
+import { ProdukList } from '../components/Produk'
 
 type Tab = 'ibadah' | 'destinasi' | 'tips'
 const TAB_OPTIONS: { value: Tab; label: string }[] = [
@@ -223,6 +224,7 @@ export function TempatDetail() {
             <Points items={t.tips} />
           </>
         )}
+        <ProdukList items={t.produk} />
         <p className="text-xs text-redup">{REKOM_NOTE}</p>
       </div>
     </article>
@@ -242,6 +244,7 @@ export function TipDetail() {
         <Galeri media={t.media} />
         <Paragraf items={t.isi} />
         {t.poin.length > 0 && <Points items={t.poin} />}
+        <ProdukList items={t.produk} />
         <p className="text-xs text-redup">{REKOM_NOTE}</p>
         {next && <Berikutnya to={`/ibadah/tips/${next.id}`} judul={next.judul} />}
       </div>
@@ -291,6 +294,7 @@ export function IbadahDetail() {
         {utama && (
           <p className="rounded-xl bg-batu px-3 py-2.5 text-sm text-redup">Video membantu, tapi baca juga penjelasannya supaya pemahamanmu lebih matang.</p>
         )}
+        <ProdukList items={s.produk} />
         <button
           onClick={() => toggle(s.id)}
           aria-pressed={ok}

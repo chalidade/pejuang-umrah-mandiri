@@ -14,6 +14,15 @@ export interface Media {
   mulai?: string
   keterangan?: string
 }
+/** Produk rekomendasi dengan link afiliasi (Shopee, Tokopedia, Traveloka, dll). */
+export interface Produk {
+  nama: string
+  url: string
+  harga?: string
+  catatan?: string
+  /** khusus daftar perlengkapan: nama barang di checklist Persiapan yang mendapat tombol Beli */
+  checklist?: string
+}
 export interface Doa {
   arab: string
   latin: string
@@ -28,6 +37,7 @@ export interface IbadahData {
   poin: string[]
   doa: Doa[]
   media: Media[]
+  produk?: Produk[]
 }
 export interface TempatData {
   nama: string
@@ -38,6 +48,7 @@ export interface TempatData {
   tips: string[]
   maps: string
   media: Media[]
+  produk?: Produk[]
 }
 export interface TipData {
   judul: string
@@ -45,16 +56,45 @@ export interface TipData {
   isi: string[]
   poin: string[]
   media: Media[]
+  produk?: Produk[]
 }
 export interface Konten {
   kategoriIbadah: string[]
   ibadah: IbadahData[]
   tempat: TempatData[]
   tips: TipData[]
+  /** produk perlengkapan umum, bisa ditautkan ke item checklist */
+  perlengkapan?: Produk[]
 }
-export type Jenis = 'ibadah' | 'tempat' | 'tips'
-export const LABEL_JENIS: Record<Jenis, string> = { ibadah: 'Materi ibadah', tempat: 'Tempat', tips: 'Tips' }
-export const namaItem = (x: IbadahData | TempatData | TipData) => ('nama' in x ? x.nama : x.judul)
+export type Jenis = 'ibadah' | 'tempat' | 'tips' | 'perlengkapan'
+export const LABEL_JENIS: Record<Jenis, string> = { ibadah: 'Materi ibadah', tempat: 'Tempat', tips: 'Tips', perlengkapan: 'Produk perlengkapan' }
+export const namaItem = (x: IbadahData | TempatData | TipData | Produk) => ('nama' in x ? x.nama : x.judul)
+
+// ── Toko / link afiliasi ──────────────────────────────────────────────────
+const TOKO: [RegExp, string][] = [
+  [/(^|\.)(shopee\.co\.id|shopee\.com|shp\.ee)$/, 'Shopee'],
+  [/(^|\.)(tokopedia\.com|tokopedia\.link)$/, 'Tokopedia'],
+  [/(^|\.)lazada\.co\.id$/, 'Lazada'],
+  [/(^|\.)blibli\.com$/, 'Blibli'],
+  [/(^|\.)tiktok\.com$/, 'TikTok Shop'],
+  [/(^|\.)traveloka\.com$/, 'Traveloka'],
+  [/(^|\.)tiket\.com$/, 'tiket.com'],
+  [/(^|\.)agoda\.com$/, 'Agoda'],
+  [/(^|\.)booking\.com$/, 'Booking.com'],
+  [/(^|\.)klook\.com$/, 'Klook'],
+  [/(^|\.)airalo\.com$/, 'Airalo'],
+  [/(^|\.)amazon\.[a-z.]+$/, 'Amazon'],
+  [/(^|\.)(amzn\.to|amzn\.asia)$/, 'Amazon'],
+]
+/** Nama toko dari link (https saja). null kalau link tidak valid. */
+export function namaToko(url: string): string | null {
+  let u: URL
+  try { u = new URL((url ?? '').trim()) } catch { return null }
+  if (u.protocol !== 'https:' || !u.hostname.includes('.')) return null
+  const host = u.hostname.replace(/^www\./, '')
+  return TOKO.find(([re]) => re.test(host))?.[1] ?? host
+}
+export const PESAN_PRODUK = 'Link produk harus lengkap dan diawali https://, misalnya https://s.shopee.co.id/…'
 
 /** "Jabal Nur dan Gua Hira" → "jabal-nur-dan-gua-hira" */
 export function slug(s: string): string {
@@ -144,6 +184,17 @@ function cekMedia(label: string, media: unknown, err: string[]) {
   })
 }
 
+function cekProduk(label: string, xs: unknown, err: string[]) {
+  if (xs == null) return
+  if (!Array.isArray(xs)) return void err.push(`${label}: produk harus berupa daftar.`)
+  xs.forEach((p: Produk, j) => {
+    const l = `${label}, produk ke-${j + 1}`
+    if (kosong(p?.nama)) err.push(`${l}: nama produk belum diisi.`)
+    if (kosong(p?.url)) err.push(`${l}: link belum diisi.`)
+    else if (!namaToko(p.url)) err.push(`${l}: ${PESAN_PRODUK}`)
+  })
+}
+
 /** Daftar masalah dalam bahasa sehari-hari. Kosong berarti aman diterbitkan. */
 export function cekKonten(data: unknown): string[] {
   const err: string[] = []
@@ -172,6 +223,7 @@ export function cekKonten(data: unknown): string[] {
     if (!ada(t?.isi) && !ada(t?.poin) && !(t?.media ?? []).length) err.push(`${label}: isi penjelasan, poin, atau video.`)
     ;(t?.doa ?? []).forEach((x, j) => { if (kosong(x?.arab) && kosong(x?.latin)) err.push(`${label}, doa ke-${j + 1}: isi teks Arab atau latin.`) })
     cekMedia(label, t?.media, err)
+    cekProduk(label, t?.produk, err)
   })
 
   const s2 = new Set<string>()
@@ -185,6 +237,7 @@ export function cekKonten(data: unknown): string[] {
     if (!ada(t?.isi)) err.push(`${label}: penjelasan belum diisi.`)
     if (!kosong(t?.maps) && !/^https:\/\//.test(t.maps)) err.push(`${label}: link Maps harus diawali https://`)
     cekMedia(label, t?.media, err)
+    cekProduk(label, t?.produk, err)
   })
 
   const s3 = new Set<string>()
@@ -195,7 +248,15 @@ export function cekKonten(data: unknown): string[] {
     if (kosong(t?.ringkas)) err.push(`${label}: ringkasan belum diisi.`)
     if (!ada(t?.isi) && !ada(t?.poin) && !(t?.media ?? []).length) err.push(`${label}: isi penjelasan, poin, atau video.`)
     cekMedia(label, t?.media, err)
+    cekProduk(label, t?.produk, err)
   })
+
+  if (d.perlengkapan != null && !Array.isArray(d.perlengkapan)) err.push('Daftar produk perlengkapan rusak.')
+  else {
+    cekProduk('Perlengkapan', d.perlengkapan, err)
+    const s4 = new Set<string>()
+    ;(d.perlengkapan ?? []).forEach((p) => { if (!kosong(p?.nama)) unik(`Produk "${p.nama}"`, p.nama, s4) })
+  }
   return err
 }
 
@@ -209,15 +270,26 @@ export function rapikan(k: Konten): Konten {
       if (m.keterangan?.trim()) o.keterangan = m.keterangan.trim()
       return o
     })
+  const produk = (xs: Produk[] | undefined, denganChecklist = false) =>
+    (xs ?? []).filter((p) => p.nama?.trim() || p.url?.trim()).map((p) => {
+      const o: Produk = { nama: (p.nama ?? '').trim(), url: (p.url ?? '').trim() }
+      if (p.harga?.trim()) o.harga = p.harga.trim()
+      if (p.catatan?.trim()) o.catatan = p.catatan.trim()
+      if (denganChecklist && p.checklist?.trim()) o.checklist = p.checklist.trim()
+      return o
+    })
+  const pr = (xs: Produk[] | undefined) => { const r = produk(xs); return r.length ? { produk: r } : {} }
   return {
     kategoriIbadah: bersih(k.kategoriIbadah),
     ibadah: k.ibadah.map((t) => ({
       judul: t.judul.trim(), kategori: t.kategori.trim(), ringkas: t.ringkas.trim(), isi: bersih(t.isi), poin: bersih(t.poin),
       doa: (t.doa ?? []).map((x) => ({ arab: x.arab.trim(), latin: x.latin.trim(), arti: x.arti.trim(), sumber: (x.sumber ?? '').trim() })).filter((x) => x.arab || x.latin),
       media: media(t.media),
+      ...pr(t.produk),
     })),
-    tempat: k.tempat.map((t) => ({ nama: t.nama.trim(), kota: t.kota, kategori: t.kategori, ringkas: t.ringkas.trim(), isi: bersih(t.isi), tips: bersih(t.tips), maps: (t.maps ?? '').trim(), media: media(t.media) })),
-    tips: k.tips.map((t) => ({ judul: t.judul.trim(), ringkas: t.ringkas.trim(), isi: bersih(t.isi), poin: bersih(t.poin), media: media(t.media) })),
+    tempat: k.tempat.map((t) => ({ nama: t.nama.trim(), kota: t.kota, kategori: t.kategori, ringkas: t.ringkas.trim(), isi: bersih(t.isi), tips: bersih(t.tips), maps: (t.maps ?? '').trim(), media: media(t.media), ...pr(t.produk) })),
+    tips: k.tips.map((t) => ({ judul: t.judul.trim(), ringkas: t.ringkas.trim(), isi: bersih(t.isi), poin: bersih(t.poin), media: media(t.media), ...pr(t.produk) })),
+    perlengkapan: produk(k.perlengkapan, true),
   }
 }
 
@@ -233,11 +305,12 @@ export type Usulan =
   | { aksi: Aksi; jenis: 'ibadah'; sasaran: string | null; data: IbadahData | null }
   | { aksi: Aksi; jenis: 'tempat'; sasaran: string | null; data: TempatData | null }
   | { aksi: Aksi; jenis: 'tips'; sasaran: string | null; data: TipData | null }
+  | { aksi: Aksi; jenis: 'perlengkapan'; sasaran: string | null; data: Produk | null }
 
 /** Terapkan satu usulan ke konten. Melempar Error berbahasa sehari-hari kalau tidak bisa. */
 export function terapkanUsulan(k: Konten, u: Usulan): Konten {
-  if (!u || !['tambah', 'ubah', 'hapus'].includes(u.aksi) || !['ibadah', 'tempat', 'tips'].includes(u.jenis)) throw new Error('Format usulan tidak dikenali.')
-  const daftar = [...k[u.jenis]] as (IbadahData | TempatData | TipData)[]
+  if (!u || !['tambah', 'ubah', 'hapus'].includes(u.aksi) || !['ibadah', 'tempat', 'tips', 'perlengkapan'].includes(u.jenis)) throw new Error('Format usulan tidak dikenali.')
+  const daftar = [...(k[u.jenis] ?? [])] as (IbadahData | TempatData | TipData | Produk)[]
   const label = LABEL_JENIS[u.jenis]
   const cari = () => {
     const i = daftar.findIndex((x) => slug(namaItem(x)) === slug(u.sasaran ?? ''))

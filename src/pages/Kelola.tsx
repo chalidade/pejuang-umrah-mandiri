@@ -7,9 +7,10 @@ import { Button, Field, PageHeader, Tabs, inputClass } from '../components/ui'
 import Sheet from '../components/Sheet'
 import { Thumb } from '../components/Media'
 import {
-  cekKonten, infoMedia, namaItem, rapikan, slug, KATEGORI_LIST, KOTA_LIST, LABEL_JENIS, PENANDA_USULAN, PESAN_MEDIA,
-  type Doa, type IbadahData, type Jenis, type Konten, type Media, type TempatData, type TipData, type Usulan,
+  cekKonten, infoMedia, namaItem, namaToko, rapikan, slug, KATEGORI_LIST, KOTA_LIST, LABEL_JENIS, PENANDA_USULAN, PESAN_MEDIA, PESAN_PRODUK,
+  type Doa, type IbadahData, type Jenis, type Konten, type Media, type Produk, type TempatData, type TipData, type Usulan,
 } from '../lib/konten'
+import { DEFAULT_CHECKLIST } from '../data/checklist'
 import kontenTayang from '../data/konten.json'
 import { tandaiTim } from '../lib/tim'
 
@@ -137,7 +138,9 @@ function Masuk({ onMasuk, onBatal, busy, error }: { onMasuk: (t: string) => void
 const Nomor = ({ n }: { n: number }) => <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-nabawi-muda text-sm font-bold text-nabawi">{n}</span>
 
 // ── Daftar + formulir, dipakai mode admin dan mode usulan ─────────────────
-type DataJenis = { ibadah: IbadahData; tempat: TempatData; tips: TipData }
+type DataJenis = { ibadah: IbadahData; tempat: TempatData; tips: TipData; perlengkapan: Produk }
+type Item = IbadahData | TempatData | TipData | Produk
+const mediaDari = (t: Item) => ('media' in t ? t.media : [])
 type EditTarget = { jenis: Jenis; i: number | null } | null
 type Unggah = ((file: File, nama: string) => Promise<string>) | undefined
 
@@ -149,9 +152,11 @@ function Daftar({ konten: k, labelSimpan, unggah, onSimpan, onHapus, onKategori 
 }) {
   const [tab, setTab] = useState<Jenis>('ibadah')
   const [edit, setEdit] = useState<EditTarget>(null)
-  const items = k[tab] as (IbadahData | TempatData | TipData)[]
-  const sub = (t: IbadahData | TempatData | TipData) => ('nama' in t ? `${t.kategori} · ${t.kota}` : 'doa' in t ? t.kategori : t.ringkas)
-  const tambahLabel = { ibadah: 'materi', tempat: 'tempat', tips: 'tips' }[tab]
+  const items = (k[tab] ?? []) as Item[]
+  const sub = (t: Item) => ('url' in t ? [namaToko(t.url) ?? 'Link belum benar', t.harga, t.checklist && `checklist: ${t.checklist}`].filter(Boolean).join(' · ')
+    : 'kota' in t ? `${t.kategori} · ${t.kota}` : 'doa' in t ? t.kategori : t.ringkas)
+  const nProduk = (t: Item) => ('produk' in t && t.produk?.length ? ` · ${t.produk.length} produk` : '')
+  const tambahLabel = { ibadah: 'materi', tempat: 'tempat', tips: 'tips', perlengkapan: 'produk' }[tab]
   const hapus = edit && edit.i != null ? () => { onHapus(edit.jenis, edit.i!); setEdit(null) } : undefined
   return (
     <>
@@ -159,7 +164,11 @@ function Daftar({ konten: k, labelSimpan, unggah, onSimpan, onHapus, onKategori 
         { value: 'ibadah', label: `Ibadah (${k.ibadah.length})` },
         { value: 'tempat', label: `Destinasi (${k.tempat.length})` },
         { value: 'tips', label: `Tips (${k.tips.length})` },
+        { value: 'perlengkapan', label: `Produk (${(k.perlengkapan ?? []).length})` },
       ]} />
+      {tab === 'perlengkapan' && (
+        <p className="mx-5 mb-3 text-sm text-redup">Produk perlengkapan tampil di bagian Belanja perlengkapan pada checklist Persiapan. Tautkan ke barang checklist supaya muncul tombol Beli di sebelahnya.</p>
+      )}
       <div className="px-5">
         <div className="flex gap-2">
           <Button className="flex-1" onClick={() => setEdit({ jenis: tab, i: null })}>+ Tambah {tambahLabel}</Button>
@@ -171,9 +180,9 @@ function Daftar({ konten: k, labelSimpan, unggah, onSimpan, onHapus, onKategori 
               <button onClick={() => setEdit({ jenis: tab, i })} className="flex w-full items-center gap-3 px-4 py-3 text-left">
                 <span className="min-w-0 flex-1">
                   <span className="block font-semibold">{namaItem(t) || 'Tanpa judul'}</span>
-                  <span className="block text-sm text-redup">{sub(t)}{t.media.length ? ` · ${t.media.length} media` : ''}</span>
+                  <span className="block text-sm text-redup">{sub(t)}{mediaDari(t).length ? ` · ${mediaDari(t).length} media` : ''}{nProduk(t)}</span>
                 </span>
-                {t.media[0] && <Thumb media={t.media[0]} className="h-12 w-12" time={false} />}
+                {mediaDari(t)[0] && <Thumb media={mediaDari(t)[0]} className="h-12 w-12" time={false} />}
                 <span className="text-sm font-semibold text-nabawi">Ubah</span>
               </button>
             </li>
@@ -191,6 +200,10 @@ function Daftar({ konten: k, labelSimpan, unggah, onSimpan, onHapus, onKategori 
       {edit?.jenis === 'tips' && (
         <TipSheet awal={edit.i == null ? null : k.tips[edit.i]} labelSimpan={labelSimpan} unggah={unggah}
           onClose={() => setEdit(null)} onSimpan={(d) => { onSimpan('tips', edit.i, d); setEdit(null) }} onHapus={hapus} />
+      )}
+      {edit?.jenis === 'perlengkapan' && (
+        <PerlengkapanSheet awal={edit.i == null ? null : (k.perlengkapan ?? [])[edit.i]} labelSimpan={labelSimpan}
+          onClose={() => setEdit(null)} onSimpan={(d) => { onSimpan('perlengkapan', edit.i, d); setEdit(null) }} onHapus={hapus} />
       )}
     </>
   )
@@ -224,13 +237,13 @@ function Editor({ draf, setDraf, token, busy, setBusy, setError, setNotice, muat
     <div className="pb-28">
       <Daftar konten={k} labelSimpan="Simpan" unggah={(file, nama) => unggahFoto(token, file, nama)} onKategori={() => setKategoriBuka(true)}
         onSimpan={(jenis, i, data) => {
-          const xs = [...k[jenis]] as unknown[]
+          const xs = [...(k[jenis] ?? [])] as unknown[]
           if (i == null) xs.push(data); else xs[i] = data
           let baru = { ...k, [jenis]: xs } as Konten
           if (jenis === 'ibadah' && !baru.kategoriIbadah.includes((data as IbadahData).kategori)) baru = { ...baru, kategoriIbadah: [...baru.kategoriIbadah, (data as IbadahData).kategori] }
           ubah(baru)
         }}
-        onHapus={(jenis, i) => ubah({ ...k, [jenis]: (k[jenis] as unknown[]).filter((_, j) => j !== i) } as Konten)} />
+        onHapus={(jenis, i) => ubah({ ...k, [jenis]: ((k[jenis] ?? []) as unknown[]).filter((_, j) => j !== i) } as Konten)} />
       <div className="px-5">
         <button onClick={muat} disabled={busy || berubah} className="mt-4 text-sm font-semibold text-redup disabled:opacity-40">Muat ulang versi terbaru</button>
         {masalah.length > 0 && (
@@ -389,6 +402,58 @@ function DoaEditor({ value, onChange }: { value: Doa[]; onChange: (d: Doa[]) => 
   )
 }
 
+const produkOk = (xs: Produk[]) => xs.every((p) => (!p.nama.trim() && !p.url.trim()) || (p.nama.trim() && namaToko(p.url)))
+
+/** Daftar produk rekomendasi (link afiliasi) di satu materi. */
+function ProdukEditor({ value, onChange }: { value: Produk[]; onChange: (p: Produk[]) => void }) {
+  const set = (i: number, p: Partial<Produk>) => onChange(value.map((x, j) => (j === i ? { ...x, ...p } : x)))
+  return (
+    <div className="space-y-3">
+      {value.map((p, i) => <ProdukIsian key={i} p={p} set={(x) => set(i, x)} onHapus={() => onChange(value.filter((_, j) => j !== i))} />)}
+      <Button type="button" variant="ghost" className="w-full" onClick={() => onChange([...value, { nama: '', url: '' }])}>+ Tambah produk</Button>
+    </div>
+  )
+}
+
+function ProdukIsian({ p, set, onHapus }: { p: Produk; set: (x: Partial<Produk>) => void; onHapus?: () => void }) {
+  const toko = p.url.trim() ? namaToko(p.url) : null
+  return (
+    <div className="space-y-2 rounded-xl border border-garis p-3">
+      <input className={inputClass} value={p.nama} onChange={(e) => set({ nama: e.target.value })} placeholder="Nama produk, misal: Kain ihram handuk 2 helai" aria-label="Nama produk" />
+      <input className={inputClass} inputMode="url" value={p.url} onChange={(e) => set({ url: e.target.value })} placeholder="Link afiliasi, misal https://s.shopee.co.id/…" aria-label="Link afiliasi" />
+      {p.url.trim() && !toko && <p className="text-xs text-bata">{PESAN_PRODUK}</p>}
+      {toko && <p className="text-xs font-semibold text-nabawi">✓ {toko}</p>}
+      <input className={inputClass} value={p.harga ?? ''} onChange={(e) => set({ harga: e.target.value })} placeholder="Kisaran harga, misal Rp85 rb (boleh kosong)" aria-label="Harga" />
+      <input className={inputClass} value={p.catatan ?? ''} onChange={(e) => set({ catatan: e.target.value })} placeholder="Kenapa direkomendasikan (boleh kosong)" aria-label="Catatan" />
+      {onHapus && <button type="button" onClick={onHapus} className="text-sm font-semibold text-bata">Hapus produk ini</button>}
+    </div>
+  )
+}
+
+const BARANG_CHECKLIST = Object.values(DEFAULT_CHECKLIST).flat()
+
+function PerlengkapanSheet({ awal, labelSimpan, onClose, onSimpan, onHapus }: { awal: Produk | null; labelSimpan: string; onClose: () => void; onSimpan: (p: Produk) => void; onHapus?: () => void }) {
+  const [d, setD] = useState<Produk>({ nama: awal?.nama ?? '', url: awal?.url ?? '', harga: awal?.harga ?? '', catatan: awal?.catatan ?? '', checklist: awal?.checklist ?? '' })
+  const set = (p: Partial<Produk>) => setD({ ...d, ...p })
+  const siap = !!(d.nama.trim() && namaToko(d.url))
+  return (
+    <SheetForm judul={awal ? 'Ubah produk' : 'Tambah produk'} labelSimpan={labelSimpan} siap={siap} labelHapus="produk ini" onClose={onClose} onHapus={onHapus}
+      kurang="Isi nama produk dan link yang diawali https://."
+      onSimpan={() => onSimpan({ nama: d.nama.trim(), url: d.url.trim(), harga: d.harga?.trim(), catatan: d.catatan?.trim(), checklist: d.checklist?.trim() })}>
+      <ProdukIsian p={d} set={set} />
+      <Field label="Tombol Beli di checklist (boleh kosong)" hint="Pilih barang checklist yang mendapat tombol Beli ke produk ini.">
+        <select className={inputClass} value={d.checklist ?? ''} onChange={(e) => set({ checklist: e.target.value })}>
+          <option value="">Tidak ditautkan</option>
+          {Object.entries(DEFAULT_CHECKLIST).map(([g, xs]) => (
+            <optgroup key={g} label={g}>{xs.map((x) => <option key={x} value={x}>{x}</option>)}</optgroup>
+          ))}
+          {d.checklist && !BARANG_CHECKLIST.includes(d.checklist) && <option value={d.checklist}>{d.checklist}</option>}
+        </select>
+      </Field>
+    </SheetForm>
+  )
+}
+
 function SheetForm({ judul, labelSimpan, siap, kurang, onSimpan, onHapus, labelHapus, onClose, children }: {
   judul: string; labelSimpan: string; siap: boolean; kurang: string; onSimpan: () => void; onHapus?: () => void; labelHapus: string; onClose: () => void; children: ReactNode
 }) {
@@ -414,15 +479,15 @@ function IbadahSheet({ awal, kategori, labelSimpan, unggah, onClose, onSimpan, o
 }) {
   const [d, setD] = useState({
     judul: awal?.judul ?? '', kategori: awal?.kategori ?? kategori[0] ?? '', ringkas: awal?.ringkas ?? '',
-    isi: (awal?.isi ?? []).join('\n\n'), poin: (awal?.poin ?? []).join('\n'), doa: awal?.doa ?? [], media: awal?.media ?? [],
+    isi: (awal?.isi ?? []).join('\n\n'), poin: (awal?.poin ?? []).join('\n'), doa: awal?.doa ?? [], media: awal?.media ?? [], produk: awal?.produk ?? [],
   })
   const [katBaru, setKatBaru] = useState(false)
   const set = (p: Partial<typeof d>) => setD({ ...d, ...p })
-  const siap = !!(d.judul.trim() && d.kategori.trim() && d.ringkas.trim() && (d.isi.trim() || d.poin.trim() || adaMedia(d.media)) && mediaOk(d.media))
+  const siap = !!(d.judul.trim() && d.kategori.trim() && d.ringkas.trim() && (d.isi.trim() || d.poin.trim() || adaMedia(d.media)) && mediaOk(d.media) && produkOk(d.produk))
   return (
     <SheetForm judul={awal ? 'Ubah materi ibadah' : 'Tambah materi ibadah'} labelSimpan={labelSimpan} siap={siap} labelHapus="materi ini" onClose={onClose} onHapus={onHapus}
       kurang="Isi judul, kategori, ringkasan, dan penjelasan, poin, atau video. Pastikan semua link dikenali."
-      onSimpan={() => onSimpan({ judul: d.judul.trim(), kategori: d.kategori.trim(), ringkas: d.ringkas.trim(), isi: paragraf(d.isi), poin: baris(d.poin), doa: d.doa, media: d.media })}>
+      onSimpan={() => onSimpan({ judul: d.judul.trim(), kategori: d.kategori.trim(), ringkas: d.ringkas.trim(), isi: paragraf(d.isi), poin: baris(d.poin), doa: d.doa, media: d.media, produk: d.produk })}>
       <Field label="Judul"><input className={inputClass} value={d.judul} onChange={(e) => set({ judul: e.target.value })} placeholder="Contoh: Miqat" /></Field>
       <Field label="Kategori">
         <div className="space-y-2">
@@ -441,6 +506,7 @@ function IbadahSheet({ awal, kategori, labelSimpan, unggah, onClose, onSimpan, o
       <Field label="Penjelasan" hint="Tekan Enter dua kali untuk paragraf baru."><textarea rows={6} className={inputClass} value={d.isi} onChange={(e) => set({ isi: e.target.value })} /></Field>
       <Field label="Poin penting (boleh kosong)" hint="Satu poin per baris."><textarea rows={4} className={inputClass} value={d.poin} onChange={(e) => set({ poin: e.target.value })} /></Field>
       <Field label="Doa dan bacaan (boleh kosong)"><DoaEditor value={d.doa} onChange={(doa) => set({ doa })} /></Field>
+      <Field label="Rekomendasi produk (boleh kosong)" hint="Tempel link afiliasi Shopee, Tokopedia, dll. Tampil di bawah materi."><ProdukEditor value={d.produk} onChange={(produk) => set({ produk })} /></Field>
     </SheetForm>
   )
 }
@@ -448,14 +514,14 @@ function IbadahSheet({ awal, kategori, labelSimpan, unggah, onClose, onSimpan, o
 function TempatSheet({ awal, labelSimpan, unggah, onClose, onSimpan, onHapus }: { awal: TempatData | null; labelSimpan: string; unggah?: Unggah; onClose: () => void; onSimpan: (t: TempatData) => void; onHapus?: () => void }) {
   const [d, setD] = useState({
     nama: awal?.nama ?? '', kota: awal?.kota ?? KOTA_LIST[0], kategori: awal?.kategori ?? KATEGORI_LIST[0], ringkas: awal?.ringkas ?? '',
-    isi: (awal?.isi ?? []).join('\n\n'), tips: (awal?.tips ?? []).join('\n'), maps: awal?.maps ?? '', media: awal?.media ?? [],
+    isi: (awal?.isi ?? []).join('\n\n'), tips: (awal?.tips ?? []).join('\n'), maps: awal?.maps ?? '', media: awal?.media ?? [], produk: awal?.produk ?? [],
   })
   const set = (p: Partial<typeof d>) => setD({ ...d, ...p })
-  const siap = !!(d.nama.trim() && d.ringkas.trim() && d.isi.trim() && mediaOk(d.media))
+  const siap = !!(d.nama.trim() && d.ringkas.trim() && d.isi.trim() && mediaOk(d.media) && produkOk(d.produk))
   return (
     <SheetForm judul={awal ? 'Ubah tempat' : 'Tambah tempat'} labelSimpan={labelSimpan} siap={siap} labelHapus="tempat ini" onClose={onClose} onHapus={onHapus}
       kurang="Isi nama, ringkasan, dan penjelasan. Pastikan semua link dikenali."
-      onSimpan={() => onSimpan({ nama: d.nama.trim(), kota: d.kota, kategori: d.kategori, ringkas: d.ringkas.trim(), isi: paragraf(d.isi), tips: baris(d.tips), maps: d.maps.trim(), media: d.media })}>
+      onSimpan={() => onSimpan({ nama: d.nama.trim(), kota: d.kota, kategori: d.kategori, ringkas: d.ringkas.trim(), isi: paragraf(d.isi), tips: baris(d.tips), maps: d.maps.trim(), media: d.media, produk: d.produk })}>
       <Field label="Nama tempat"><input className={inputClass} value={d.nama} onChange={(e) => set({ nama: e.target.value })} placeholder="Contoh: Masjid Quba" /></Field>
       <Field label="Kota"><Pilihan value={d.kota} options={KOTA_LIST} onChange={(kota) => set({ kota })} /></Field>
       <Field label="Jenis"><Pilihan value={d.kategori} options={KATEGORI_LIST} onChange={(kategori) => set({ kategori })} /></Field>
@@ -466,18 +532,19 @@ function TempatSheet({ awal, labelSimpan, unggah, onClose, onSimpan, onHapus }: 
       <Field label="Penjelasan" hint="Ceritakan tempatnya. Tekan Enter dua kali untuk paragraf baru."><textarea rows={6} className={inputClass} value={d.isi} onChange={(e) => set({ isi: e.target.value })} /></Field>
       <Field label="Tips (boleh kosong)" hint="Satu tips per baris."><textarea rows={4} className={inputClass} value={d.tips} onChange={(e) => set({ tips: e.target.value })} placeholder={'Contoh: Datang setelah Subuh\nBawa air minum'} /></Field>
       <Field label="Link Google Maps (boleh kosong)" hint="Kalau kosong, tombol Maps mencari otomatis dari nama tempat."><input className={inputClass} inputMode="url" value={d.maps} onChange={(e) => set({ maps: e.target.value })} placeholder="https://maps.app.goo.gl/…" /></Field>
+      <Field label="Rekomendasi produk (boleh kosong)" hint="Misalnya link afiliasi hotel, tur, atau oleh-oleh."><ProdukEditor value={d.produk} onChange={(produk) => set({ produk })} /></Field>
     </SheetForm>
   )
 }
 
 function TipSheet({ awal, labelSimpan, unggah, onClose, onSimpan, onHapus }: { awal: TipData | null; labelSimpan: string; unggah?: Unggah; onClose: () => void; onSimpan: (t: TipData) => void; onHapus?: () => void }) {
-  const [d, setD] = useState({ judul: awal?.judul ?? '', ringkas: awal?.ringkas ?? '', isi: (awal?.isi ?? []).join('\n\n'), poin: (awal?.poin ?? []).join('\n'), media: awal?.media ?? [] })
+  const [d, setD] = useState({ judul: awal?.judul ?? '', ringkas: awal?.ringkas ?? '', isi: (awal?.isi ?? []).join('\n\n'), poin: (awal?.poin ?? []).join('\n'), media: awal?.media ?? [], produk: awal?.produk ?? [] })
   const set = (p: Partial<typeof d>) => setD({ ...d, ...p })
-  const siap = !!(d.judul.trim() && d.ringkas.trim() && (d.isi.trim() || d.poin.trim() || adaMedia(d.media)) && mediaOk(d.media))
+  const siap = !!(d.judul.trim() && d.ringkas.trim() && (d.isi.trim() || d.poin.trim() || adaMedia(d.media)) && mediaOk(d.media) && produkOk(d.produk))
   return (
     <SheetForm judul={awal ? 'Ubah tips' : 'Tambah tips'} labelSimpan={labelSimpan} siap={siap} labelHapus="tips ini" onClose={onClose} onHapus={onHapus}
       kurang="Isi judul, ringkasan, dan penjelasan, poin, atau video. Pastikan semua link dikenali."
-      onSimpan={() => onSimpan({ judul: d.judul.trim(), ringkas: d.ringkas.trim(), isi: paragraf(d.isi), poin: baris(d.poin), media: d.media })}>
+      onSimpan={() => onSimpan({ judul: d.judul.trim(), ringkas: d.ringkas.trim(), isi: paragraf(d.isi), poin: baris(d.poin), media: d.media, produk: d.produk })}>
       <Field label="Judul"><input className={inputClass} value={d.judul} onChange={(e) => set({ judul: e.target.value })} placeholder="Contoh: Masuk Raudhah lewat Nusuk" /></Field>
       <Field label="Ringkasan" hint="Satu kalimat pendek. Muncul di daftar."><input className={inputClass} value={d.ringkas} onChange={(e) => set({ ringkas: e.target.value })} /></Field>
       <Field label="Video dan foto" hint="Cocok untuk hack dari TikTok, Instagram, atau YouTube.">
@@ -485,6 +552,7 @@ function TipSheet({ awal, labelSimpan, unggah, onClose, onSimpan, onHapus }: { a
       </Field>
       <Field label="Penjelasan" hint="Tekan Enter dua kali untuk paragraf baru."><textarea rows={5} className={inputClass} value={d.isi} onChange={(e) => set({ isi: e.target.value })} /></Field>
       <Field label="Poin-poin" hint="Satu poin per baris."><textarea rows={5} className={inputClass} value={d.poin} onChange={(e) => set({ poin: e.target.value })} /></Field>
+      <Field label="Rekomendasi produk (boleh kosong)" hint="Misalnya link afiliasi eSIM, tiket kereta, atau barang yang disebut di tips."><ProdukEditor value={d.produk} onChange={(produk) => set({ produk })} /></Field>
     </SheetForm>
   )
 }
@@ -501,7 +569,12 @@ function isiIssue(u: Usulan, dari: string) {
   if (dari.trim()) L.push(`Dari: ${dari.trim()}`)
   if (u.aksi === 'ubah' && u.sasaran && u.sasaran !== nama) L.push(`Mengganti: ${u.sasaran}`)
   const d = u.data
-  if (d) {
+  const produkBaris = (p: Produk) => `- ${p.nama}: ${p.url}${p.harga ? ` (${p.harga})` : ''}${p.catatan ? `: ${p.catatan}` : ''}`
+  if (d && 'url' in d) {
+    L.push('', produkBaris(d))
+    if (d.checklist) L.push(`**Tombol Beli di checklist:** ${d.checklist}`)
+    L.push('')
+  } else if (d) {
     L.push('')
     if ('kota' in d) L.push(`**Kota:** ${d.kota} · **Jenis:** ${d.kategori}`)
     if ('doa' in d) L.push(`**Kategori:** ${d.kategori}`)
@@ -512,6 +585,7 @@ function isiIssue(u: Usulan, dari: string) {
     if ('doa' in d && d.doa.length) L.push('**Doa**', ...d.doa.flatMap((x) => [x.arab, x.latin ? `_${x.latin}_` : '', x.arti, x.sumber ? `(${x.sumber})` : '', '']))
     if (d.media.length) L.push('**Foto & video**', ...d.media.map((m) => `- ${m.url}${m.mulai ? ` (mulai ${m.mulai})` : ''}${m.keterangan ? `: ${m.keterangan}` : ''}`), '')
     if ('maps' in d && d.maps) L.push(`**Maps:** ${d.maps}`, '')
+    if (d.produk?.length) L.push('**Rekomendasi produk**', ...d.produk.map(produkBaris), '')
   }
   if (u.aksi === 'hapus') L.push('', 'Minta dihapus dari aplikasi.', '')
   L.push('---', 'Pemilik repo: beri label **disetujui** untuk menerbitkan usulan ini.', '', '<details><summary>Data untuk sistem (jangan diubah)</summary>', '', '```json', JSON.stringify(u), '```', '', '</details>')
@@ -521,7 +595,7 @@ function isiIssue(u: Usulan, dari: string) {
 function ModeUsulan({ onAdmin }: { onAdmin: () => void }) {
   const konten = kontenTayang as Konten
   const [kirim, setKirim] = useState<Usulan | null>(null)
-  const sasaran = (jenis: Jenis, i: number) => namaItem(konten[jenis][i])
+  const sasaran = (jenis: Jenis, i: number) => namaItem((konten[jenis] ?? [])[i])
   return (
     <div>
       <PageHeader title="Kelola konten" subtitle="Usulkan materi ibadah, tempat, dan tips untuk tab Panduan." back="/pengaturan" />

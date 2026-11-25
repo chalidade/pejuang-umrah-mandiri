@@ -52,3 +52,13 @@ Admin juga bisa:
 - Hindari harga dan jam buka yang pasti: cepat berubah.
 - Hal yang menyangkut ibadah dicek dulu bersama mutawwif.
 - Konten yang tidak lengkap atau rusak tidak akan tayang: aplikasi tetap memakai versi terakhir yang benar.
+
+## Produk dan link afiliasi
+
+Setiap materi Ibadah, Destinasi, dan Tips punya isian **Rekomendasi produk**. Ada juga tab **Produk** untuk perlengkapan umum.
+
+- **Nama produk** dan **link afiliasi** wajib. Link harus lengkap, diawali `https://` (link pendek Shopee `https://s.shopee.co.id/…`, Tokopedia `https://tokopedia.link/…`, dll. boleh).
+- **Harga** dan **catatan** boleh kosong. Tulis harga sebagai kisaran, misal `± Rp85 rb`, karena harga toko berubah.
+- Di tab **Produk**, pilih **Tombol Beli di checklist** supaya barang itu mendapat tombol Beli di checklist Persiapan.
+- Aplikasi otomatis menampilkan nama toko (Shopee, Tokopedia, Lazada, Traveloka, tiket.com, Agoda, Klook, Airalo, dll.) dan catatan bahwa link adalah link afiliasi.
+- Pilih produk yang benar-benar layak direkomendasikan. Kepercayaan pengguna lebih mahal dari komisinya.
